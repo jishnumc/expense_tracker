@@ -19,8 +19,15 @@ class AppColorsDark extends AppColors {
         onSecondaryContainer: const Color(0xFFE8DEF8),
         error: const Color(0xFFF2B8B5),
         onError: const Color(0xFF601410),
-        surface: const Color(0xFF1C1B1F),
+        success: const Color(0xFF00C853),
+        onSuccess: const Color(0xFFFFFFFF),
+        incomePrimary: const Color.fromARGB(255, 1, 47, 1),
+        incomeSecondary: const Color(0xFF008000),
+        expensePrimary: const Color.fromARGB(255, 46, 1, 1),
+        expenseSecondary: const Color(0xFFB22222),
+        surface: const Color(0xFF121212),
         onSurface: const Color(0xFFE6E1E5),
         outline: const Color(0xFF938F99),
+        white: const Color(0xFFFFFFFF),
       );
 }

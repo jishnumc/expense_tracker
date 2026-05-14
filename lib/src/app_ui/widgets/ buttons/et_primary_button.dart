@@ -6,6 +6,7 @@ class ETPrimaryButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.icon,
+    this.child,
     super.key,
   });
 
@@ -14,37 +15,40 @@ class ETPrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   final Widget? icon;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
 
     return SizedBox(
-      width: 343,
+      width: child != null ? null : double.infinity,
       height: 48,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: EdgeInsets.zero,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[icon!, const SizedBox(width: 10)],
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                height: 1.5,
-              ),
+        child:
+            child ??
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[icon!, const SizedBox(width: 10)],
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: context.zAppColors.white,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       ),
     );
   }

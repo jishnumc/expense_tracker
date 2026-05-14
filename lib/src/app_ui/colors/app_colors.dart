@@ -17,9 +17,16 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.onSecondaryContainer,
     required this.error,
     required this.onError,
+    required this.success,
+    required this.onSuccess,
+    required this.incomePrimary,
+    required this.incomeSecondary,
+    required this.expensePrimary,
+    required this.expenseSecondary,
     required this.surface,
     required this.onSurface,
     required this.outline,
+    required this.white,
   });
 
   /// The primary color.
@@ -52,6 +59,24 @@ class AppColors extends ThemeExtension<AppColors> {
   /// The on-error color.
   final Color onError;
 
+  /// The success color.
+  final Color success;
+
+  /// The on-success color.
+  final Color onSuccess;
+
+  /// The income primary color.
+  final Color incomePrimary;
+
+  /// The income secondary color.
+  final Color incomeSecondary;
+
+  /// The expense primary color.
+  final Color expensePrimary;
+
+  /// The expense secondary color.
+  final Color expenseSecondary;
+
   /// The surface color.
   final Color surface;
 
@@ -60,6 +85,9 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// The outline color.
   final Color outline;
+
+  /// The white color.
+  final Color white;
 
   @override
   AppColors copyWith({
@@ -73,9 +101,16 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? onSecondaryContainer,
     Color? error,
     Color? onError,
+    Color? success,
+    Color? onSuccess,
+    Color? incomePrimary,
+    Color? incomeSecondary,
+    Color? expensePrimary,
+    Color? expenseSecondary,
     Color? surface,
     Color? onSurface,
     Color? outline,
+    Color? white,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -88,9 +123,16 @@ class AppColors extends ThemeExtension<AppColors> {
       onSecondaryContainer: onSecondaryContainer ?? this.onSecondaryContainer,
       error: error ?? this.error,
       onError: onError ?? this.onError,
+      success: success ?? this.success,
+      onSuccess: onSuccess ?? this.onSuccess,
+      incomePrimary: incomePrimary ?? this.incomePrimary,
+      incomeSecondary: incomeSecondary ?? this.incomeSecondary,
+      expensePrimary: expensePrimary ?? this.expensePrimary,
+      expenseSecondary: expenseSecondary ?? this.expenseSecondary,
       surface: surface ?? this.surface,
       onSurface: onSurface ?? this.onSurface,
       outline: outline ?? this.outline,
+      white: white ?? this.white,
     );
   }
 
@@ -126,9 +168,20 @@ class AppColors extends ThemeExtension<AppColors> {
       )!,
       error: Color.lerp(error, other.error, t)!,
       onError: Color.lerp(onError, other.onError, t)!,
+      success: Color.lerp(success, other.success, t)!,
+      onSuccess: Color.lerp(onSuccess, other.onSuccess, t)!,
+      incomePrimary: Color.lerp(incomePrimary, other.incomePrimary, t)!,
+      incomeSecondary: Color.lerp(incomeSecondary, other.incomeSecondary, t)!,
+      expensePrimary: Color.lerp(expensePrimary, other.expensePrimary, t)!,
+      expenseSecondary: Color.lerp(
+        expenseSecondary,
+        other.expenseSecondary,
+        t,
+      )!,
       surface: Color.lerp(surface, other.surface, t)!,
       onSurface: Color.lerp(onSurface, other.onSurface, t)!,
       outline: Color.lerp(outline, other.outline, t)!,
+      white: Color.lerp(white, other.white, t)!,
     );
   }
 }

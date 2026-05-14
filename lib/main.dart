@@ -15,8 +15,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const textTheme = TextThemeNative();
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'Expense Tracker',
       routerConfig: AppRouter.router,
+      themeMode: ThemeMode.dark,
       theme: const AppThemeLight(textTheme).themeData,
       darkTheme: const AppThemeDark(textTheme).themeData,
     );
