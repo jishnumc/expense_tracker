@@ -3,6 +3,7 @@ import 'package:expense_tracker/src/features/home/widgets/et_monthly_limit_card.
 import 'package:expense_tracker/src/features/home/widgets/et_summary_card.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_transaction_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -10,6 +11,13 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 120),
+        child: ETFloatingActionButton(
+          onPressed: () => context.push('/add-transaction'),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

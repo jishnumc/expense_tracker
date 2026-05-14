@@ -5,6 +5,7 @@ export 'extensions/theme_extensions.dart';
 export 'spacing/app_spacing.dart';
 export 'widgets/ buttons/et_primary_button.dart';
 export 'widgets/ buttons/et_secondary_button.dart';
+export 'widgets/ buttons/et_floating_action_button.dart';
 export 'widgets/ buttons/et_circle_button.dart';
 export 'widgets/inputs/et_text_field.dart';
 export 'widgets/inputs/et_otp_field.dart';

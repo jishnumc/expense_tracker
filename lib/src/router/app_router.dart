@@ -7,15 +7,41 @@ import 'package:expense_tracker/src/features/onboarding/view/onboarding_page.dar
 import 'package:expense_tracker/src/features/profile/view/profile_view.dart';
 
 import 'package:expense_tracker/src/features/splash/view/splash_page.dart';
+import 'package:expense_tracker/src/features/transaction/view/add_transaction_sheet.dart';
 import 'package:expense_tracker/src/features/transaction/view/transaction_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+class BottomSheetPage<T> extends Page<T> {
+  const BottomSheetPage({
+    required this.child,
+    super.key,
+  });
+
+  final Widget child;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return ModalBottomSheetRoute<T>(
+      settings: this,
+      builder: (context) => child,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+}
 
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashPage()),
+      GoRoute(
+        path: '/add-transaction',
+        pageBuilder: (context, state) => const BottomSheetPage(
+          child: AddTransactionSheet(),
+        ),
+      ),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),

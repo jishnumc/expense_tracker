@@ -17,7 +17,7 @@ class ETNicknameEditor extends StatefulWidget {
 
 class _ETNicknameEditorState extends State<ETNicknameEditor> {
   late TextEditingController _controller;
-  bool _isEditing = false;
+  final ValueNotifier<bool> _isEditingNotifier = ValueNotifier<bool>(false);
 
   @override
   void initState() {
@@ -28,13 +28,12 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
   @override
   void dispose() {
     _controller.dispose();
+    _isEditingNotifier.dispose();
     super.dispose();
   }
 
   void _toggleEditing() {
-    setState(() {
-      _isEditing = !_isEditing;
-    });
+    _isEditingNotifier.value = !_isEditingNotifier.value;
   }
 
   @override
@@ -54,9 +53,16 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
           ),
         ),
         const SizedBox(height: 12),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _isEditing ? _buildEditMode(colors, textTheme) : _buildViewMode(colors, textTheme),
+        ValueListenableBuilder<bool>(
+          valueListenable: _isEditingNotifier,
+          builder: (context, isEditing, _) {
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: isEditing
+                  ? _buildEditMode(colors, textTheme)
+                  : _buildViewMode(colors, textTheme),
+            );
+          },
         ),
       ],
     );
@@ -90,10 +96,7 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: colors.white,
-                  width: 1.5,
-                ),
+                border: Border.all(color: colors.white, width: 1.5),
               ),
               child: const Icon(
                 Icons.edit_outlined,
