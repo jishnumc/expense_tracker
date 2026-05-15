@@ -7,7 +7,13 @@ class JsonResponseConverter implements Converter {
   const JsonResponseConverter();
 
   @override
-  Request convertRequest(Request request) => request;
+  Request convertRequest(Request request) {
+    final req = request.copyWith(
+      body: jsonEncode(request.body),
+    );
+    req.headers['Content-Type'] = 'application/json';
+    return req;
+  }
 
   @override
   Response<BodyType> convertResponse<BodyType, InnerType>(
@@ -15,7 +21,7 @@ class JsonResponseConverter implements Converter {
   ) {
     final body = response.body;
 
-    if (body is String) {
+    if (body is String && body.isNotEmpty) {
       final decoded = jsonDecode(body);
       return response.copyWith<BodyType>(body: decoded as BodyType);
     }

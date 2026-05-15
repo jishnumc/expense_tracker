@@ -4,19 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class NicknameView extends StatefulWidget {
+  final String phone;
+
+  const NicknameView({super.key, required this.phone});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<NicknameView> createState() => _NicknameViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
-  final _phoneController = TextEditingController();
+class _NicknameViewState extends State<NicknameView> {
+  final _nicknameController = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _nicknameController.dispose();
     super.dispose();
   }
 
@@ -25,8 +27,8 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         state.maybeWhen(
-          otpSent: (phone, otp, userExists, nickname, token) {
-            context.go('/otp-verification');
+          authenticated: (user) {
+            context.go('/home');
           },
           error: (message) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -44,14 +46,14 @@ class _LoginViewState extends State<LoginView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Get Started",
+                "Create Profile",
                 style: Theme.of(context).textTheme.headlineLarge
                     ?.copyWith(color: context.zAppColors.white)
                     .copyWith(fontSize: 24, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 20),
               Text(
-                "Log In Using Phone & OTP",
+                "Enter a nickname to continue",
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -59,31 +61,28 @@ class _LoginViewState extends State<LoginView> {
               ),
               const SizedBox(height: 40),
               ETTextField(
-                controller: _phoneController,
-                hintText: 'Phone',
-                keyboardType: TextInputType.phone,
-                prefix: Text(
-                  '+91',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: context.zAppColors.white,
-                  ),
-                ),
+                controller: _nicknameController,
+                hintText: 'Nickname',
+                keyboardType: TextInputType.name,
               ),
               const SizedBox(height: 24),
               BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
                   return ETPrimaryButton(
                     label: state.maybeWhen(
-                      loading: () => 'SENDING...',
-                      orElse: () => 'CONTINUE',
+                      loading: () => 'CREATING...',
+                      orElse: () => 'FINISH',
                     ),
                     onPressed: state.maybeWhen(
                       loading: () => null,
                       orElse: () => () {
-                        final phone = _phoneController.text.trim();
-                        if (phone.isNotEmpty) {
+                        final nickname = _nicknameController.text.trim();
+                        if (nickname.isNotEmpty) {
                           context.read<AuthBloc>().add(
-                                AuthEvent.sendOtpRequested(phone),
+                                AuthEvent.registerRequested(
+                                  phone: widget.phone,
+                                  nickname: nickname,
+                                ),
                               );
                         }
                       },

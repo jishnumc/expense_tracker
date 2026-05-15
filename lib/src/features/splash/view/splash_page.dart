@@ -1,5 +1,7 @@
 import 'package:expense_tracker/src/app_ui/assets.dart';
+import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,23 +14,20 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   @override
-  void initState() {
-    super.initState();
-    _navigateToOnboarding();
-  }
-
-  Future<void> _navigateToOnboarding() async {
-    await Future<void>.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      context.go('/onboarding');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: SvgPicture.asset(AppAssets.etLogo, width: 133, height: 104),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        state.maybeWhen(
+          authenticated: (user) => context.go('/home'),
+          initial: () => context.go('/onboarding'),
+          error: (_) => context.go('/onboarding'),
+          orElse: () {},
+        );
+      },
+      child: Scaffold(
+        body: Center(
+          child: SvgPicture.asset(AppAssets.etLogo, width: 133, height: 104),
+        ),
       ),
     );
   }
