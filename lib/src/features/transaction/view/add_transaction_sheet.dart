@@ -1,5 +1,9 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
+import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AddTransactionSheet extends StatefulWidget {
   const AddTransactionSheet({super.key});
@@ -17,68 +21,92 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
     final colors = context.zAppColors;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A), // Match the dark sheet color
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Add Transaction',
-                style: textTheme.headlineSmall?.copyWith(
-                  color: colors.white,
-                  fontWeight: FontWeight.bold,
+    return BlocProvider(
+      create: (context) =>
+          sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
+      child: Builder(
+        builder: (context) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A1A1A), // Match the dark sheet color
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Add Transaction',
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        'Close',
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Text(
-                  'Close',
-                  style: textTheme.bodyLarge?.copyWith(
+                const SizedBox(height: 32),
+                _SegmentedControl(
+                  isExpense: _isExpense,
+                  onChanged: (value) => setState(() => _isExpense = value),
+                ),
+                const SizedBox(height: 24),
+                const ETTextField(hintText: 'Title'),
+                const SizedBox(height: 16),
+                const ETTextField(hintText: 'Amount (₹)'),
+                const SizedBox(height: 24),
+                Text(
+                  'CATEGORY',
+                  style: textTheme.labelMedium?.copyWith(
                     color: colors.white.withValues(alpha: 0.5),
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          _buildSegmentedControl(colors, textTheme),
-          const SizedBox(height: 24),
-          const ETTextField(hintText: 'Title'),
-          const SizedBox(height: 16),
-          const ETTextField(hintText: 'Amount (₹)'),
-          const SizedBox(height: 24),
-          Text(
-            'CATEGORY',
-            style: textTheme.labelMedium?.copyWith(
-              color: colors.white.withValues(alpha: 0.5),
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w600,
+                const SizedBox(height: 12),
+                _CategoryList(
+                  selectedCategory: _selectedCategory,
+                  onSelected: (category) =>
+                      setState(() => _selectedCategory = category),
+                ),
+                const SizedBox(height: 24),
+                const _InfoBox(),
+                const SizedBox(height: 32),
+                ETPrimaryButton(
+                  label: 'Save',
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const SizedBox(height: 24), // Space for system navigation bar
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          _buildCategoryList(colors, textTheme),
-          const SizedBox(height: 24),
-          _buildInfoBox(colors, textTheme),
-          const SizedBox(height: 32),
-          ETPrimaryButton(
-            label: 'Save',
-            onPressed: () => Navigator.pop(context),
-          ),
-          const SizedBox(height: 24), // Space for system navigation bar
-        ],
+          );
+        },
       ),
     );
   }
+}
 
-  Widget _buildSegmentedControl(AppColors colors, TextTheme textTheme) {
+class _SegmentedControl extends StatelessWidget {
+  const _SegmentedControl({required this.isExpense, required this.onChanged});
+
+  final bool isExpense;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -88,21 +116,51 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildSegmentItem('Expense', _isExpense, colors, textTheme)),
-          Expanded(child: _buildSegmentItem('Income', !_isExpense, colors, textTheme)),
+          Expanded(
+            child: _SegmentItem(
+              label: 'Expense',
+              isSelected: isExpense,
+              onTap: () => onChanged(true),
+            ),
+          ),
+          Expanded(
+            child: _SegmentItem(
+              label: 'Income',
+              isSelected: !isExpense,
+              onTap: () => onChanged(false),
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSegmentItem(String label, bool isSelected, AppColors colors, TextTheme textTheme) {
+class _SegmentItem extends StatelessWidget {
+  const _SegmentItem({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+    final textTheme = Theme.of(context).textTheme;
+
     return GestureDetector(
-      onTap: () => setState(() => _isExpense = label == 'Expense'),
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? (label == 'Expense' ? colors.incomePrimary : colors.primary) : Colors.transparent,
+          color: isSelected
+              ? (label == 'Expense' ? colors.incomePrimary : colors.primary)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
@@ -117,41 +175,119 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       ),
     );
   }
+}
 
-  Widget _buildCategoryList(AppColors colors, TextTheme textTheme) {
-    final categories = ['Food', 'Bills', 'Transport', 'Shopping'];
+class _CategoryList extends StatelessWidget {
+  const _CategoryList({
+    required this.selectedCategory,
+    required this.onSelected,
+  });
+
+  final String selectedCategory;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+    final textTheme = Theme.of(context).textTheme;
+
+    return BlocBuilder<CategoryBloc, CategoryState>(
+      builder: (context, state) {
+        return state.maybeWhen(
+          success: (categories) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: categories.map((cat) {
+                  final isSelected = selectedCategory == cat.name;
+                  return GestureDetector(
+                    onTap: () => onSelected(cat.name),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? colors.primary.withValues(alpha: 0.2)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? colors.primary
+                              : colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: Text(
+                        cat.name,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? colors.white
+                              : colors.white.withValues(alpha: 0.5),
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            );
+          },
+          loading: () => const _CategoryShimmer(),
+          error: (message) =>
+              Text(message, style: const TextStyle(color: Colors.red)),
+          orElse: () => const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+}
+
+class _CategoryShimmer extends StatelessWidget {
+  const _CategoryShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: categories.map((cat) {
-          final isSelected = _selectedCategory == cat;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCategory = cat),
+        children: List.generate(
+          5,
+          (index) => Shimmer.fromColors(
+            baseColor: colors.white.withValues(alpha: 0.1),
+            highlightColor: colors.white.withValues(alpha: 0.2),
             child: Container(
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? colors.primary.withValues(alpha: 0.2) : Colors.transparent,
+                color: colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected ? colors.primary : colors.white.withValues(alpha: 0.1),
-                ),
               ),
-              child: Text(
-                cat,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: isSelected ? colors.white : colors.white.withValues(alpha: 0.5),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
+              child: Container(
+                width: 60,
+                height: 16,
+                color: colors.white.withValues(alpha: 0.1),
               ),
             ),
-          );
-        }).toList(),
+          ),
+        ),
       ),
     );
   }
+}
 
-  Widget _buildInfoBox(AppColors colors, TextTheme textTheme) {
+class _InfoBox extends StatelessWidget {
+  const _InfoBox();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

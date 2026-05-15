@@ -7,6 +7,11 @@ import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_b
 import 'package:expense_tracker/src/outer_layer/clients/api_client.dart';
 import 'package:expense_tracker/src/outer_layer/clients/storage_client.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_remote_data_source.dart';
+import 'package:expense_tracker/src/features/transaction/data/repositories/transaction_repository_impl.dart';
+import 'package:expense_tracker/src/features/transaction/data/services/transaction_service.dart';
+import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,19 +22,29 @@ Future<void> init() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
 
-  // Clients
-  sl.registerLazySingleton(() => ApiClient());
+  // Storage
   sl.registerLazySingleton(() => StorageClient(plugin: sl()));
+
+  // Data Sources (Local first)
+  sl.registerLazySingleton<AuthLocalDataSource>(
+    () => AuthLocalDataSourceImpl(sl()),
+  );
+
+  // Clients
+  sl.registerLazySingleton(() => ApiClient(authLocalDataSource: sl()));
 
   // Services
   sl.registerLazySingleton(() => sl<ApiClient>().getService<AuthService>());
+  sl.registerLazySingleton(
+    () => sl<ApiClient>().getService<TransactionService>(),
+  );
 
-  // Data Sources
+  // Data Sources (Remote)
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(sl()),
   );
-  sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(sl()),
+  sl.registerLazySingleton<TransactionRemoteDataSource>(
+    () => TransactionRemoteDataSourceImpl(sl()),
   );
 
   // Repositories
@@ -38,6 +53,9 @@ Future<void> init() async {
       remoteDataSource: sl(),
       localDataSource: sl(),
     ),
+  );
+  sl.registerLazySingleton<ITransactionRepository>(
+    () => TransactionRepositoryImpl(sl()),
   );
 
   // Validators
@@ -50,4 +68,5 @@ Future<void> init() async {
       phoneValidator: sl(),
     ),
   );
+  sl.registerFactory(() => CategoryBloc(transactionRepository: sl()));
 }

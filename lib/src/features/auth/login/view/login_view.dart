@@ -84,7 +84,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return null; // Clear error when empty
+                      return null;
                     }
                     final result = PhoneValidator().validate(value);
                     switch (result) {
