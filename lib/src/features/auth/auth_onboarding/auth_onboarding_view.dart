@@ -1,9 +1,12 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthOnboardingView extends StatefulWidget {
-  const AuthOnboardingView({super.key});
+  final String phone;
+  const AuthOnboardingView({super.key, required this.phone});
 
   @override
   State<AuthOnboardingView> createState() => _AuthOnboardingViewState();
@@ -34,52 +37,79 @@ class _AuthOnboardingViewState extends State<AuthOnboardingView> {
     final colors = context.zAppColors;
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "What should we call you?",
-                style: textTheme.headlineMedium?.copyWith(
-                  color: colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        state.maybeWhen(
+          authenticated: (user) {
+            context.go('/home');
+          },
+          error: (message) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          },
+          orElse: () {},
+        );
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "👋 What should we call you?",
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "This name stays only on your device.",
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colors.white.withValues(alpha: 0.6),
-                  fontSize: 16,
+                const SizedBox(height: 12),
+                Text(
+                  "This name stays only on your device.",
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colors.white.withValues(alpha: 0.6),
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 60),
-              ETTextField(
-                controller: _nameController,
-                hintText: 'Eg: Johnnnie',
-                suffixIcon: !_isNameEmpty
-                    ? const Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.green,
-                        size: 24,
-                      )
-                    : null,
-              ),
-              //const Spacer(),
-              SizedBox(height: 16),
-              ETPrimaryButton(
-                label: 'Continue',
-                onPressed: _isNameEmpty
-                    ? null
-                    : () {
-                        context.go('/home');
-                      },
-              ),
-            ],
+                const SizedBox(height: 60),
+                ETTextField(
+                  controller: _nameController,
+                  hintText: 'Eg: Johnnnie',
+                  suffixIcon: !_isNameEmpty
+                      ? const Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.green,
+                          size: 24,
+                        )
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    return ETPrimaryButton(
+                      label: state.maybeWhen(
+                        loading: () => 'Creating...',
+                        orElse: () => 'Continue',
+                      ),
+                      onPressed: (_isNameEmpty || state is AuthLoading)
+                          ? null
+                          : () {
+                              final nickname = _nameController.text.trim();
+                              context.read<AuthBloc>().add(
+                                AuthEvent.registerRequested(
+                                  phone: widget.phone,
+                                  nickname: nickname,
+                                ),
+                              );
+                            },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

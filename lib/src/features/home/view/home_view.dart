@@ -1,8 +1,10 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_monthly_limit_card.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_summary_card.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_transaction_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
@@ -26,13 +28,21 @@ class HomePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              Text(
-                'Welcome, User',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: context.zAppColors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  final nickname = state.maybeWhen(
+                    authenticated: (user) => user.nickname,
+                    orElse: () => 'User',
+                  );
+                  return Text(
+                    'Welcome, $nickname',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: context.zAppColors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 24),
               const Row(

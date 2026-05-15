@@ -5,7 +5,6 @@ import 'package:expense_tracker/src/features/home/view/home_view.dart';
 import 'package:expense_tracker/src/features/main/view/main_shell.dart';
 import 'package:expense_tracker/src/features/onboarding/view/onboarding_page.dart';
 import 'package:expense_tracker/src/features/profile/view/profile_view.dart';
-import 'package:expense_tracker/src/features/auth/login/view/nickname_view.dart';
 
 import 'package:expense_tracker/src/features/splash/view/splash_page.dart';
 import 'package:expense_tracker/src/features/transaction/view/add_transaction_sheet.dart';
@@ -53,12 +52,8 @@ class AppRouter {
         path: '/nickname',
         builder: (context, state) {
           final phone = state.extra as String? ?? '';
-          return NicknameView(phone: phone);
+          return AuthOnboardingView(phone: phone);
         },
-      ),
-      GoRoute(
-        path: '/auth-onboarding',
-        builder: (context, state) => const AuthOnboardingView(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

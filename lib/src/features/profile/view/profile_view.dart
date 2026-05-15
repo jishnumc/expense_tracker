@@ -1,9 +1,12 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:expense_tracker/src/features/profile/widgets/et_alert_limit_editor.dart';
 import 'package:expense_tracker/src/features/profile/widgets/et_category_editor.dart';
 import 'package:expense_tracker/src/features/profile/widgets/et_cloud_sync_card.dart';
 import 'package:expense_tracker/src/features/profile/widgets/et_nickname_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -39,13 +42,25 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 32),
               const ETCloudSyncCard(),
               const SizedBox(height: 32),
-              ETSecondaryButton(
-                label: 'Log Out',
-                onPressed: () {},
-                icon: Icon(
-                  Icons.power_settings_new,
-                  color: context.zAppColors.error,
-                  size: 28,
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  state.maybeWhen(
+                    initial: () => context.go('/login'),
+                    orElse: () {},
+                  );
+                },
+                child: ETSecondaryButton(
+                  label: 'Log Out',
+                  onPressed: () {
+                    context.read<AuthBloc>().add(
+                      const AuthEvent.logoutRequested(),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.power_settings_new,
+                    color: context.zAppColors.error,
+                    size: 28,
+                  ),
                 ),
               ),
               const SizedBox(height: 120), // Extra space for bottom nav
