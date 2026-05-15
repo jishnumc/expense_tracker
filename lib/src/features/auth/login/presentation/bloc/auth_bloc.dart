@@ -2,6 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/entities/user.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/repositories/auth_repository.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -9,10 +11,14 @@ part 'auth_bloc.freezed.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository _authRepository;
+  final PhoneValidator _phoneValidator;
 
-  AuthBloc({required IAuthRepository authRepository})
-    : _authRepository = authRepository,
-      super(const AuthState.initial()) {
+  AuthBloc({
+    required IAuthRepository authRepository,
+    required PhoneValidator phoneValidator,
+  }) : _authRepository = authRepository,
+       _phoneValidator = phoneValidator,
+       super(const AuthState.initial()) {
     on<AuthSendOtpRequested>(_onSendOtpRequested);
     on<AuthVerifyOtpRequested>(_onVerifyOtpRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
@@ -24,32 +30,41 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSendOtpRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
-    try {
-      final response = await _authRepository.sendOtp(event.phone);
-      final userExists = response.userExists ?? false;
+    final validation = _phoneValidator.validate(event.phone);
 
-      if (userExists && response.token != null && response.nickname != null) {
-        final user = User(
-          nickname: response.nickname!,
-          token: response.token!,
-          phone: event.phone,
-        );
-        await _authRepository.saveUser(user);
-        emit(AuthState.authenticated(user));
-      } else {
-        emit(
-          AuthState.otpSent(
-            phone: event.phone,
-            otp: response.otp ?? '',
-            userExists: userExists,
-            nickname: response.nickname,
-            token: response.token,
-          ),
-        );
-      }
-    } catch (e) {
-      emit(AuthState.error(e.toString()));
+    switch (validation) {
+      case ValidationSuccess():
+        emit(const AuthState.loading());
+        try {
+          final response = await _authRepository.sendOtp(event.phone);
+          final userExists = response.userExists ?? false;
+
+          if (userExists &&
+              response.token != null &&
+              response.nickname != null) {
+            final user = User(
+              nickname: response.nickname!,
+              token: response.token!,
+              phone: event.phone,
+            );
+            await _authRepository.saveUser(user);
+            emit(AuthState.authenticated(user));
+          } else {
+            emit(
+              AuthState.otpSent(
+                phone: event.phone,
+                otp: response.otp ?? '',
+                userExists: userExists,
+                nickname: response.nickname,
+                token: response.token,
+              ),
+            );
+          }
+        } catch (e) {
+          emit(AuthState.error(e.toString()));
+        }
+      case ValidationFailure():
+        emit(AuthState.error(validation.error.message));
     }
   }
 

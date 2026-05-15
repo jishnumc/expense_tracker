@@ -1,5 +1,6 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ETTextField extends StatelessWidget {
   const ETTextField({
@@ -11,6 +12,9 @@ class ETTextField extends StatelessWidget {
     this.obscureText = false,
     this.validator,
     this.onChanged,
+    this.inputFormatters,
+    this.focusNode,
+    this.autovalidateMode,
     super.key,
   });
 
@@ -22,6 +26,9 @@ class ETTextField extends StatelessWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
+  final FocusNode? focusNode;
+  final AutovalidateMode? autovalidateMode;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +41,9 @@ class ETTextField extends StatelessWidget {
       obscureText: obscureText,
       validator: validator,
       onChanged: onChanged,
+      inputFormatters: inputFormatters,
+      focusNode: focusNode,
+      autovalidateMode: autovalidateMode,
       style: textTheme.bodyLarge?.copyWith(color: colors.white),
       decoration: InputDecoration(
         hintText: hintText,

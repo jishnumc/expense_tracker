@@ -6,6 +6,7 @@ import 'package:expense_tracker/src/features/auth/login/domain/repositories/auth
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:expense_tracker/src/outer_layer/clients/api_client.dart';
 import 'package:expense_tracker/src/outer_layer/clients/storage_client.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,6 +40,14 @@ Future<void> init() async {
     ),
   );
 
+  // Validators
+  sl.registerLazySingleton(() => PhoneValidator());
+
   // Blocs
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerFactory(
+    () => AuthBloc(
+      authRepository: sl(),
+      phoneValidator: sl(),
+    ),
+  );
 }
