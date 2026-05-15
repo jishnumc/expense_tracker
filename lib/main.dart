@@ -1,16 +1,19 @@
 import 'package:expense_tracker/src/app_ui/themes/app_theme_dark.dart';
 import 'package:expense_tracker/src/app_ui/themes/app_theme_light.dart';
 import 'package:expense_tracker/src/app_ui/typograhy/text_theme_native.dart';
-import 'package:expense_tracker/src/router/router.dart';
+import 'package:expense_tracker/src/router/app_router.dart';
+import 'package:expense_tracker/src/system/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart' as di;
 import 'package:expense_tracker/src/system/di/injection.dart';
+import 'package:talker_bloc_logger/talker_bloc_logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
+  Bloc.observer = TalkerBlocObserver(talker: talker);
   runApp(const MyApp());
 }
 
