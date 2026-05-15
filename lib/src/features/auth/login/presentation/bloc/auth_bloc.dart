@@ -11,8 +11,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository _authRepository;
 
   AuthBloc({required IAuthRepository authRepository})
-      : _authRepository = authRepository,
-        super(const AuthState.initial()) {
+    : _authRepository = authRepository,
+      super(const AuthState.initial()) {
     on<AuthSendOtpRequested>(_onSendOtpRequested);
     on<AuthVerifyOtpRequested>(_onVerifyOtpRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
@@ -27,13 +27,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthState.loading());
     try {
       final response = await _authRepository.sendOtp(event.phone);
-      emit(AuthState.otpSent(
-        phone: event.phone,
-        otp: response.otp ?? '',
-        userExists: response.userExists ?? false,
-        nickname: response.nickname,
-        token: response.token,
-      ));
+      emit(
+        AuthState.otpSent(
+          phone: event.phone,
+          otp: response.otp ?? '',
+          userExists: response.userExists ?? false,
+          nickname: response.nickname,
+          token: response.token,
+        ),
+      );
     } catch (e) {
       emit(AuthState.error(e.toString()));
     }
@@ -46,7 +48,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // In this flow, Step 2 is user enters OTP.
     // If userExists == true, we already have nickname and token from sendOtp.
     // If userExists == false, we need to go to register screen.
-    
+
     if (event.userExists) {
       if (event.token != null && event.nickname != null) {
         final user = User(
@@ -57,7 +59,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _authRepository.saveUser(user);
         emit(AuthState.authenticated(user));
       } else {
-        emit(const AuthState.error('Missing token or nickname for existing user'));
+        emit(
+          const AuthState.error('Missing token or nickname for existing user'),
+        );
       }
     } else {
       emit(AuthState.nicknameRequired(phone: event.phone));
@@ -70,7 +74,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.loading());
     try {
-      final user = await _authRepository.createAccount(event.phone, event.nickname);
+      final user = await _authRepository.createAccount(
+        event.phone,
+        event.nickname,
+      );
       emit(AuthState.authenticated(user));
     } catch (e) {
       emit(AuthState.error(e.toString()));
