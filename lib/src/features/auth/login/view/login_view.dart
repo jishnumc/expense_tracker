@@ -25,13 +25,16 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         state.maybeWhen(
+          authenticated: (user) {
+            context.go('/home');
+          },
           otpSent: (phone, otp, userExists, nickname, token) {
             context.go('/otp-verification');
           },
           error: (message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
           },
           orElse: () {},
         );
@@ -83,8 +86,8 @@ class _LoginViewState extends State<LoginView> {
                         final phone = _phoneController.text.trim();
                         if (phone.isNotEmpty) {
                           context.read<AuthBloc>().add(
-                                AuthEvent.sendOtpRequested(phone),
-                              );
+                            AuthEvent.sendOtpRequested(phone),
+                          );
                         }
                       },
                     ),

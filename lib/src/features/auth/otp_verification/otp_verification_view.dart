@@ -55,9 +55,9 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
             context.go('/nickname', extra: phone);
           },
           error: (message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
           },
           orElse: () {},
         );
@@ -108,7 +108,10 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                   const SizedBox(height: 8),
                   Text(
                     "Test OTP: $otp",
-                    style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -125,14 +128,14 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                       final enteredOtp = _otpController.text;
                       if (enteredOtp.length == 6) {
                         context.read<AuthBloc>().add(
-                              AuthEvent.verifyOtpRequested(
-                                phone: phone,
-                                otp: enteredOtp,
-                                userExists: userExists,
-                                nickname: nickname,
-                                token: token,
-                              ),
-                            );
+                          AuthEvent.verifyOtpRequested(
+                            phone: phone,
+                            otp: enteredOtp,
+                            userExists: userExists,
+                            nickname: nickname,
+                            token: token,
+                          ),
+                        );
                       }
                     },
                   ),

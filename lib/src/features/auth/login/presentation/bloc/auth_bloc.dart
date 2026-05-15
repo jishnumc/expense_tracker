@@ -27,15 +27,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthState.loading());
     try {
       final response = await _authRepository.sendOtp(event.phone);
-      emit(
-        AuthState.otpSent(
+      final userExists = response.userExists ?? false;
+
+      if (userExists && response.token != null && response.nickname != null) {
+        final user = User(
+          nickname: response.nickname!,
+          token: response.token!,
           phone: event.phone,
-          otp: response.otp ?? '',
-          userExists: response.userExists ?? false,
-          nickname: response.nickname,
-          token: response.token,
-        ),
-      );
+        );
+        await _authRepository.saveUser(user);
+        emit(AuthState.authenticated(user));
+      } else {
+        emit(
+          AuthState.otpSent(
+            phone: event.phone,
+            otp: response.otp ?? '',
+            userExists: userExists,
+            nickname: response.nickname,
+            token: response.token,
+          ),
+        );
+      }
     } catch (e) {
       emit(AuthState.error(e.toString()));
     }
