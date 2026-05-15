@@ -1,10 +1,11 @@
 import 'package:chopper/chopper.dart';
 import 'package:expense_tracker/src/outer_layer/network/json_response_converter.dart';
+import 'package:expense_tracker/src/system/environment.dart';
 
 class ApiClient {
   ApiClient({String? baseUrl})
     : _client = ChopperClient(
-        baseUrl: Uri.parse(baseUrl ?? 'https://api.example.com'),
+        baseUrl: Uri.parse(Environment.baseUrl),
         services: [
           //TransactionService.create(),
         ],

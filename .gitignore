@@ -43,3 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Custom
+**/*.g.dart
+**/*.lock
+**/*.mapper.dart
+**/*.freezed.dart
+**/*.chopper.dart
+lib/l10n/app_localizations*.dart
+env/*.json
+!env/sample.json
