@@ -31,9 +31,7 @@ class ProfileView extends StatelessWidget {
               const SizedBox(height: 32),
               const ETNicknameEditor(initialNickname: 'Naazley'),
               const SizedBox(height: 32),
-              const ETAlertLimitEditor(
-                currentLimit: 1000,
-              ),
+              const ETAlertLimitEditor(currentLimit: 1000),
               const SizedBox(height: 32),
               const ETCategoryEditor(
                 categories: ['Food', 'Bills', 'Transport', 'Shopping'],
