@@ -31,3 +31,17 @@ final class InvalidLengthError extends ValidationError {
   @override
   String get message => 'Invalid length';
 }
+
+final class DuplicateCategoryError extends ValidationError {
+  const DuplicateCategoryError();
+
+  @override
+  String get message => 'Category already exists';
+}
+
+final class InvalidAmountError extends ValidationError {
+  const InvalidAmountError();
+
+  @override
+  String get message => 'Please enter a valid amount greater than 0';
+}

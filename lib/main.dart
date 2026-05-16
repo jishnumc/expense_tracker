@@ -9,10 +9,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart' as di;
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
+import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
+  await sl<INotificationClient>().initialize();
   Bloc.observer = TalkerBlocObserver(talker: talker);
   runApp(const MyApp());
 }

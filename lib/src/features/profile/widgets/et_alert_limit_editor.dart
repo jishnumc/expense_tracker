@@ -1,5 +1,8 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ETAlertLimitEditor extends StatefulWidget {
   const ETAlertLimitEditor({
@@ -17,6 +20,7 @@ class ETAlertLimitEditor extends StatefulWidget {
 
 class _ETAlertLimitEditorState extends State<ETAlertLimitEditor> {
   late TextEditingController _controller;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -47,26 +51,40 @@ class _ETAlertLimitEditorState extends State<ETAlertLimitEditor> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: colors.white.withValues(alpha: 0.1),
-              width: 1,
+        Form(
+          key: _formKey,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: colors.white.withValues(alpha: 0.1),
+                width: 1,
+              ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 children: [
                   Expanded(
                     child: ETTextField(
                       controller: _controller,
                       hintText: 'Amount (₹)',
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return null;
+                        final result = const AmountValidator().validate(value);
+                        if (result is ValidationFailure) {
+                          return result.error.message;
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -76,10 +94,13 @@ class _ETAlertLimitEditorState extends State<ETAlertLimitEditor> {
                     child: ETPrimaryButton(
                       label: 'Set',
                       onPressed: () {
-                        final value = double.tryParse(_controller.text);
-                        if (value != null) {
-                          widget.onSet?.call(value);
-                          _controller.clear();
+                        if (_formKey.currentState?.validate() ?? false) {
+                          final value = double.tryParse(_controller.text);
+                          if (value != null) {
+                            widget.onSet?.call(value);
+                            _controller.clear();
+                            FocusScope.of(context).unfocus();
+                          }
                         }
                       },
                     ),
@@ -97,7 +118,8 @@ class _ETAlertLimitEditorState extends State<ETAlertLimitEditor> {
             ],
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 }

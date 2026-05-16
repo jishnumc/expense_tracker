@@ -1,4 +1,7 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/features/transaction/domain/entities/category.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validators/category_validator.dart';
 import 'package:flutter/material.dart';
 
 class ETCategoryEditor extends StatefulWidget {
@@ -9,9 +12,9 @@ class ETCategoryEditor extends StatefulWidget {
     super.key,
   });
 
-  final List<String> categories;
+  final List<Category> categories;
   final ValueChanged<String>? onAdd;
-  final ValueChanged<String>? onDelete;
+  final ValueChanged<Category>? onDelete;
 
   @override
   State<ETCategoryEditor> createState() => _ETCategoryEditorState();
@@ -19,6 +22,7 @@ class ETCategoryEditor extends StatefulWidget {
 
 class _ETCategoryEditorState extends State<ETCategoryEditor> {
   late TextEditingController _controller;
+  final ValueNotifier<String?> _errorNotifier = ValueNotifier(null);
 
   @override
   void initState() {
@@ -29,6 +33,7 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
   @override
   void dispose() {
     _controller.dispose();
+    _errorNotifier.dispose();
     super.dispose();
   }
 
@@ -67,6 +72,11 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
                     child: ETTextField(
                       controller: _controller,
                       hintText: 'New category Name',
+                      onChanged: (value) {
+                        if (_errorNotifier.value != null) {
+                          _errorNotifier.value = null;
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -76,20 +86,46 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
                     child: ETPrimaryButton(
                       label: '',
                       onPressed: () {
-                        if (_controller.text.isNotEmpty) {
-                          widget.onAdd?.call(_controller.text);
-                          _controller.clear();
+                        final validator = CategoryValidator(
+                          widget.categories.map((c) => c.name).toList(),
+                        );
+                        final result = validator.validate(_controller.text);
+
+                        if (result is ValidationFailure) {
+                          _errorNotifier.value = result.error.message;
+                          return;
                         }
+
+                        widget.onAdd?.call(_controller.text.trim());
+                        _controller.clear();
+                        _errorNotifier.value = null;
                       },
                       child: const Icon(Icons.add, color: Colors.white),
                     ),
                   ),
                 ],
               ),
+              ValueListenableBuilder<String?>(
+                valueListenable: _errorNotifier,
+                builder: (context, errorText, _) {
+                  if (errorText == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      errorText,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colors.error,
+                      ),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 12),
               const Divider(color: Colors.white10),
               const SizedBox(height: 12),
-              ...widget.categories.map((category) => _buildCategoryRow(category, colors, textTheme)),
+              ...widget.categories.map(
+                (category) => _buildCategoryRow(category, colors, textTheme),
+              ),
             ],
           ),
         ),
@@ -97,14 +133,18 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
     );
   }
 
-  Widget _buildCategoryRow(String category, AppColors colors, TextTheme textTheme) {
+  Widget _buildCategoryRow(
+    Category category,
+    AppColors colors,
+    TextTheme textTheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            category,
+            category.name,
             style: textTheme.titleMedium?.copyWith(
               color: colors.white,
               fontWeight: FontWeight.w600,
@@ -122,11 +162,7 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
                   width: 1,
                 ),
               ),
-              child: Icon(
-                Icons.delete_outline,
-                color: colors.error,
-                size: 20,
-              ),
+              child: Icon(Icons.delete_outline, color: colors.error, size: 20),
             ),
           ),
         ],

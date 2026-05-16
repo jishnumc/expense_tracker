@@ -14,6 +14,32 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     : _transactionRepository = transactionRepository,
       super(const CategoryState.initial()) {
     on<CategoryFetched>(_onCategoryFetched);
+    on<CategoryCreated>(_onCategoryCreated);
+    on<CategoryDeleted>(_onCategoryDeleted);
+  }
+
+  Future<void> _onCategoryDeleted(
+    CategoryDeleted event,
+    Emitter<CategoryState> emit,
+  ) async {
+    try {
+      await _transactionRepository.deleteCategory(event.id);
+      add(const CategoryEvent.fetched());
+    } catch (e) {
+      emit(CategoryState.error(e.toString()));
+    }
+  }
+
+  Future<void> _onCategoryCreated(
+    CategoryCreated event,
+    Emitter<CategoryState> emit,
+  ) async {
+    try {
+      await _transactionRepository.createCategory(event.name);
+      add(const CategoryEvent.fetched());
+    } catch (e) {
+      emit(CategoryState.error(e.toString()));
+    }
   }
 
   Future<void> _onCategoryFetched(

@@ -7,11 +7,17 @@ import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_b
 import 'package:expense_tracker/src/outer_layer/clients/api_client.dart';
 import 'package:expense_tracker/src/outer_layer/clients/storage_client.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
-import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_remote_data_source.dart';
+import 'package:expense_tracker/src/outer_layer/database/database_client.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
 import 'package:expense_tracker/src/features/transaction/data/repositories/transaction_repository_impl.dart';
-import 'package:expense_tracker/src/features/transaction/data/services/transaction_service.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
+import 'package:expense_tracker/src/features/profile/data/data_sources/profile_local_data_source.dart';
+import 'package:expense_tracker/src/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:expense_tracker/src/features/profile/domain/repositories/profile_repository.dart';
+import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
+import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,19 +38,23 @@ Future<void> init() async {
 
   // Clients
   sl.registerLazySingleton(() => ApiClient(authLocalDataSource: sl()));
+  sl.registerLazySingleton(() => DatabaseClient());
+  sl.registerLazySingleton<INotificationClient>(() => NotificationClient());
 
   // Services
   sl.registerLazySingleton(() => sl<ApiClient>().getService<AuthService>());
-  sl.registerLazySingleton(
-    () => sl<ApiClient>().getService<TransactionService>(),
-  );
 
   // Data Sources (Remote)
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(sl()),
   );
-  sl.registerLazySingleton<TransactionRemoteDataSource>(
-    () => TransactionRemoteDataSourceImpl(sl()),
+
+  // Data Sources (Local)
+  sl.registerLazySingleton<TransactionLocalDataSource>(
+    () => TransactionLocalDataSourceImpl(sl()),
+  );
+  sl.registerLazySingleton<ProfileLocalDataSource>(
+    () => ProfileLocalDataSourceImpl(sl()),
   );
 
   // Repositories
@@ -57,9 +67,13 @@ Future<void> init() async {
   sl.registerLazySingleton<ITransactionRepository>(
     () => TransactionRepositoryImpl(sl()),
   );
+  sl.registerLazySingleton<IProfileRepository>(
+    () => ProfileRepositoryImpl(sl()),
+  );
 
   // Validators
   sl.registerLazySingleton(() => PhoneValidator());
+  sl.registerLazySingleton(() => const AmountValidator());
 
   // Blocs
   sl.registerFactory(
@@ -69,4 +83,5 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(() => CategoryBloc(transactionRepository: sl()));
+  sl.registerFactory(() => ProfileBloc(profileRepository: sl()));
 }
