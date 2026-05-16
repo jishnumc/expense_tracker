@@ -15,7 +15,7 @@ class ETMonthlyLimitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
     final textTheme = Theme.of(context).textTheme;
-    final progress = (spentAmount / totalLimit).clamp(0.0, 1.0);
+    final progress = totalLimit == 0 ? 0.0 : (spentAmount / totalLimit).clamp(0.0, 1.0);
     final remainingPercentage = ((1 - progress) * 100).toInt();
 
     return Container(
@@ -70,9 +70,11 @@ class ETMonthlyLimitCard extends StatelessWidget {
               minHeight: 8,
               backgroundColor: colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(
-                spentAmount > totalLimit
-                    ? colors.expenseSecondary
-                    : colors.success,
+                totalLimit == 0
+                    ? Colors.grey.shade400
+                    : (spentAmount > totalLimit
+                        ? colors.expenseSecondary
+                        : colors.success),
               ),
             ),
           ),
