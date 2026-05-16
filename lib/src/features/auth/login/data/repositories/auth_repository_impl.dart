@@ -3,16 +3,20 @@ import 'package:expense_tracker/src/features/auth/login/data/data_sources/auth_r
 import 'package:expense_tracker/src/features/auth/login/data/models/auth_response_dto.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/entities/user.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/repositories/auth_repository.dart';
+import 'package:expense_tracker/src/outer_layer/database/database_client.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
+  final DatabaseClient _dbClient;
 
   AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     required AuthLocalDataSource localDataSource,
+    required DatabaseClient dbClient,
   })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource;
+        _localDataSource = localDataSource,
+        _dbClient = dbClient;
 
   @override
   Future<AuthResponseDto> sendOtp(String phone) {
@@ -51,7 +55,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<void> logout() {
-    return _localDataSource.clearAuthData();
+  Future<void> logout() async {
+    await _localDataSource.clearAuthData();
+    await _dbClient.clearAllData();
   }
 }

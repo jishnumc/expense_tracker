@@ -91,4 +91,13 @@ class DatabaseClient {
       WHERE t.is_deleted = 0
     ''');
   }
+
+  Future<void> clearAllData() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('transactions');
+      await txn.delete('categories');
+      await txn.delete('profile');
+    });
+  }
 }

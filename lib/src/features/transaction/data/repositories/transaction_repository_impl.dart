@@ -70,6 +70,11 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     }).toList();
   }
 
+  @override
+  Future<bool> hasUnsyncedData() async {
+    return await _localDataSource.hasUnsyncedData();
+  }
+
   Future<List<Map<String, dynamic>>> getLocalTransactions() async {
     return await _localDataSource.getTransactionsWithCategory();
   }

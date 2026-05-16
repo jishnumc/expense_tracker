@@ -9,4 +9,5 @@ abstract interface class ITransactionRepository {
   Future<double> getTotalIncomeForCurrentMonth();
   Future<double> getTotalExpensesForCurrentMonth();
   Future<List<Transaction>> getRecentTransactions({int limit = 10});
+  Future<bool> hasUnsyncedData();
 }

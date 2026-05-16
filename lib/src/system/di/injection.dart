@@ -64,6 +64,7 @@ Future<void> init() async {
     () => AuthRepositoryImpl(
       remoteDataSource: sl(),
       localDataSource: sl(),
+      dbClient: sl(),
     ),
   );
   sl.registerLazySingleton<ITransactionRepository>(

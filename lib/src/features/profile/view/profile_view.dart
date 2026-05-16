@@ -6,6 +6,7 @@ import 'package:expense_tracker/src/features/profile/widgets/et_category_editor.
 import 'package:expense_tracker/src/features/profile/widgets/et_cloud_sync_card.dart';
 import 'package:expense_tracker/src/features/profile/widgets/et_nickname_editor.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/category.dart';
+import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,45 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
+
+    Future<void> handleLogout() async {
+      final hasUnsynced = await sl<ITransactionRepository>().hasUnsyncedData();
+
+      if (!context.mounted) return;
+
+      if (hasUnsynced) {
+        final shouldLogout = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: context.zAppColors.surface,
+            title: Text(
+              'Unsynced Data',
+              style: TextStyle(color: context.zAppColors.white),
+            ),
+            content: Text(
+              'You have data that is not synced to the cloud. This data will be lost if you log out. Are you sure you want to proceed?',
+              style: TextStyle(color: context.zAppColors.white.withValues(alpha: 0.7)),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Cancel', style: TextStyle(color: context.zAppColors.white)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Log Out', style: TextStyle(color: context.zAppColors.error)),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldLogout == true && context.mounted) {
+          context.read<AuthBloc>().add(const AuthEvent.logoutRequested());
+        }
+      } else {
+        context.read<AuthBloc>().add(const AuthEvent.logoutRequested());
+      }
+    }
 
     return MultiBlocProvider(
       providers: [
@@ -132,11 +172,7 @@ class ProfileView extends StatelessWidget {
                   },
                   child: ETSecondaryButton(
                     label: 'Log Out',
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                        const AuthEvent.logoutRequested(),
-                      );
-                    },
+                    onPressed: handleLogout,
                     icon: Icon(
                       Icons.power_settings_new,
                       color: context.zAppColors.error,

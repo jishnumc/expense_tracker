@@ -11,6 +11,7 @@ abstract class TransactionLocalDataSource {
   Future<double> getTotalIncomeForCurrentMonth();
   Future<double> getTotalExpensesForCurrentMonth();
   Future<List<Map<String, dynamic>>> getRecentTransactions(int limit);
+  Future<bool> hasUnsyncedData();
   Future<void> deleteCategory(String id);
   String generateUuid();
 }
@@ -113,6 +114,22 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
       ORDER BY t.created_at DESC
       LIMIT ?
     ''', [limit]);
+  }
+
+  @override
+  Future<bool> hasUnsyncedData() async {
+    final db = await _dbClient.database;
+    final txResult = await db.rawQuery(
+      "SELECT count(*) as count FROM transactions WHERE is_synced = 0 AND is_deleted = 0",
+    );
+    final catResult = await db.rawQuery(
+      "SELECT count(*) as count FROM categories WHERE is_synced = 0 AND is_deleted = 0",
+    );
+
+    final txCount = Sqflite.firstIntValue(txResult) ?? 0;
+    final catCount = Sqflite.firstIntValue(catResult) ?? 0;
+
+    return txCount > 0 || catCount > 0;
   }
 
   @override
