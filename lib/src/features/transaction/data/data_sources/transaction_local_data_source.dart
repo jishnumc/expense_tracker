@@ -8,6 +8,7 @@ abstract class TransactionLocalDataSource {
   Future<void> createCategory(Category category);
   Future<void> insertTransaction(Map<String, dynamic> transaction);
   Future<List<Map<String, dynamic>>> getTransactionsWithCategory();
+  Future<List<Map<String, dynamic>>> getAllTransactions();
   Future<double> getTotalIncomeForCurrentMonth();
   Future<double> getTotalExpensesForCurrentMonth();
   Future<List<Map<String, dynamic>>> getRecentTransactions(int limit);
@@ -102,6 +103,18 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
       AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now', 'localtime')
     ''');
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllTransactions() async {
+    final db = await _dbClient.database;
+    return await db.rawQuery('''
+      SELECT t.*, c.name as category_name 
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.is_deleted = 0
+      ORDER BY t.created_at DESC
+    ''');
   }
 
   @override

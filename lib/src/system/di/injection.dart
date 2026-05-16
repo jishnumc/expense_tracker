@@ -19,6 +19,7 @@ import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_b
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_summary_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_list_bloc.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -93,6 +94,9 @@ Future<void> init() async {
       profileRepository: sl(),
       notificationClient: sl(),
     ),
+  );
+  sl.registerFactory(
+    () => TransactionListBloc(transactionRepository: sl()),
   );
   sl.registerFactory(
     () => TransactionSummaryBloc(
