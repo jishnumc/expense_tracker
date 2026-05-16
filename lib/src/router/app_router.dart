@@ -7,8 +7,8 @@ import 'package:expense_tracker/src/features/onboarding/view/onboarding_page.dar
 import 'package:expense_tracker/src/features/profile/view/profile_view.dart';
 
 import 'package:expense_tracker/src/features/splash/view/splash_page.dart';
-import 'package:expense_tracker/src/features/transaction/view/add_transaction_sheet.dart';
-import 'package:expense_tracker/src/features/transaction/view/transaction_view.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/view/add_transaction_sheet.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/view/transaction_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

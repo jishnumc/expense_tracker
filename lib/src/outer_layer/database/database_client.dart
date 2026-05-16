@@ -18,7 +18,7 @@ class DatabaseClient {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDb,
       onUpgrade: _onUpgrade,
     );
@@ -45,6 +45,7 @@ class DatabaseClient {
         category_id TEXT,
         is_synced INTEGER DEFAULT 0,
         is_deleted INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now','localtime')),
         FOREIGN KEY (category_id) REFERENCES categories (id)
       )
     ''');
@@ -68,6 +69,11 @@ class DatabaseClient {
           budget_limit REAL DEFAULT 0.0
         )
       ''');
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE transactions ADD COLUMN created_at TEXT DEFAULT (datetime("now","localtime"))',
+      );
     }
   }
 

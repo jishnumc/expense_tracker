@@ -16,6 +16,7 @@ import 'package:expense_tracker/src/features/profile/data/data_sources/profile_l
 import 'package:expense_tracker/src/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:expense_tracker/src/features/profile/domain/repositories/profile_repository.dart';
 import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
 import 'package:get_it/get_it.dart';
@@ -84,4 +85,5 @@ Future<void> init() async {
   );
   sl.registerFactory(() => CategoryBloc(transactionRepository: sl()));
   sl.registerFactory(() => ProfileBloc(profileRepository: sl()));
+  sl.registerFactory(() => TransactionBloc(transactionRepository: sl()));
 }

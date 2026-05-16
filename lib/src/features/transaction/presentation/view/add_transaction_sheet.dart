@@ -1,9 +1,13 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
 
 class AddTransactionSheet extends StatefulWidget {
   const AddTransactionSheet({super.key});
@@ -14,17 +18,50 @@ class AddTransactionSheet extends StatefulWidget {
 
 class _AddTransactionSheetState extends State<AddTransactionSheet> {
   bool _isExpense = true;
-  String _selectedCategory = 'Bills';
+  String? _selectedCategoryId;
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
     final textTheme = Theme.of(context).textTheme;
 
-    return BlocProvider(
-      create: (context) =>
-          sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
-      child: Builder(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
+        ),
+        BlocProvider(
+          create: (context) => sl<TransactionBloc>(),
+        ),
+      ],
+      child: BlocListener<TransactionBloc, TransactionState>(
+        listener: (context, state) {
+          state.maybeWhen(
+            success: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Transaction saved successfully!')),
+              );
+              Navigator.pop(context);
+            },
+            error: (message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message)),
+              );
+            },
+            orElse: () {},
+          );
+        },
+        child: Builder(
         builder: (context) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -32,67 +69,122 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               color: Color(0xFF1A1A1A), // Match the dark sheet color
               borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Add Transaction',
-                      style: textTheme.headlineSmall?.copyWith(
-                        color: colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Text(
-                        'Close',
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: colors.white.withValues(alpha: 0.5),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Add Transaction',
+                        style: textTheme.headlineSmall?.copyWith(
+                          color: colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                _SegmentedControl(
-                  isExpense: _isExpense,
-                  onChanged: (value) => setState(() => _isExpense = value),
-                ),
-                const SizedBox(height: 24),
-                const ETTextField(hintText: 'Title'),
-                const SizedBox(height: 16),
-                const ETTextField(hintText: 'Amount (₹)'),
-                const SizedBox(height: 24),
-                Text(
-                  'CATEGORY',
-                  style: textTheme.labelMedium?.copyWith(
-                    color: colors.white.withValues(alpha: 0.5),
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.w600,
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Text(
+                          'Close',
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                _CategoryList(
-                  selectedCategory: _selectedCategory,
-                  onSelected: (category) =>
-                      setState(() => _selectedCategory = category),
-                ),
-                const SizedBox(height: 24),
-                const _InfoBox(),
-                const SizedBox(height: 32),
-                ETPrimaryButton(
-                  label: 'Save',
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(height: 24), // Space for system navigation bar
-              ],
+                  const SizedBox(height: 32),
+                  _SegmentedControl(
+                    isExpense: _isExpense,
+                    onChanged: (value) => setState(() => _isExpense = value),
+                  ),
+                  const SizedBox(height: 24),
+                  ETTextField(
+                    controller: _noteController,
+                    hintText: 'Note',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a note';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ETTextField(
+                    controller: _amountController,
+                    hintText: 'Amount (₹)',
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return 'Please enter amount';
+                      final result = const AmountValidator().validate(value);
+                      if (result is ValidationFailure) {
+                        return result.error.message;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'CATEGORY',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colors.white.withValues(alpha: 0.5),
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _CategoryList(
+                    selectedCategoryId: _selectedCategoryId,
+                    onSelected: (id) =>
+                        setState(() => _selectedCategoryId = id),
+                  ),
+                  const SizedBox(height: 24),
+                  const _InfoBox(),
+                  const SizedBox(height: 32),
+                  BlocBuilder<TransactionBloc, TransactionState>(
+                    builder: (context, state) {
+                      return ETPrimaryButton(
+                        label: state.maybeWhen(
+                          loading: () => 'SAVING...',
+                          orElse: () => 'Save',
+                        ),
+                        onPressed: state.maybeWhen(
+                          loading: () => null,
+                          orElse: () => () {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              if (_selectedCategoryId == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please select a category')),
+                                );
+                                return;
+                              }
+                              context.read<TransactionBloc>().add(
+                                TransactionEvent.created(
+                                  amount: double.parse(_amountController.text),
+                                  note: _noteController.text.trim(),
+                                  type: _isExpense ? 'debit' : 'credit',
+                                  categoryId: _selectedCategoryId!,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -179,11 +271,11 @@ class _SegmentItem extends StatelessWidget {
 
 class _CategoryList extends StatelessWidget {
   const _CategoryList({
-    required this.selectedCategory,
+    required this.selectedCategoryId,
     required this.onSelected,
   });
 
-  final String selectedCategory;
+  final String? selectedCategoryId;
   final ValueChanged<String> onSelected;
 
   @override
@@ -199,9 +291,9 @@ class _CategoryList extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: categories.map((cat) {
-                  final isSelected = selectedCategory == cat.name;
+                  final isSelected = selectedCategoryId == cat.id;
                   return GestureDetector(
-                    onTap: () => onSelected(cat.name),
+                    onTap: () => onSelected(cat.id),
                     child: Container(
                       margin: const EdgeInsets.only(right: 12),
                       padding: const EdgeInsets.symmetric(
