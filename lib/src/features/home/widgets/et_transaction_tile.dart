@@ -9,6 +9,7 @@ class ETTransactionTile extends StatelessWidget {
     required this.date,
     required this.isExpense,
     required this.icon,
+    this.onDelete,
     super.key,
   });
 
@@ -18,6 +19,7 @@ class ETTransactionTile extends StatelessWidget {
   final String date;
   final bool isExpense;
   final IconData icon;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +92,17 @@ class ETTransactionTile extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 16),
-          Icon(
-            Icons.delete,
-            color: Colors.red.shade900,
-            size: 24,
+          InkWell(
+            onTap: onDelete,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                Icons.delete,
+                color: Colors.red.shade900,
+                size: 24,
+              ),
+            ),
           ),
         ],
       ),

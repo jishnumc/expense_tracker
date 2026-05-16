@@ -13,6 +13,7 @@ abstract class TransactionLocalDataSource {
   Future<List<Map<String, dynamic>>> getRecentTransactions(int limit);
   Future<bool> hasUnsyncedData();
   Future<void> deleteCategory(String id);
+  Future<void> deleteTransaction(String id);
   String generateUuid();
 }
 
@@ -106,14 +107,17 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   @override
   Future<List<Map<String, dynamic>>> getRecentTransactions(int limit) async {
     final db = await _dbClient.database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT t.*, c.name as category_name 
       FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.is_deleted = 0
       ORDER BY t.created_at DESC
       LIMIT ?
-    ''', [limit]);
+    ''',
+      [limit],
+    );
   }
 
   @override
@@ -130,6 +134,17 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
     final catCount = Sqflite.firstIntValue(catResult) ?? 0;
 
     return txCount > 0 || catCount > 0;
+  }
+
+  @override
+  Future<void> deleteTransaction(String id) async {
+    final db = await _dbClient.database;
+    await db.update(
+      'transactions',
+      {'is_deleted': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   @override

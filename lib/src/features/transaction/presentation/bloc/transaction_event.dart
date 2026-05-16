@@ -8,4 +8,6 @@ abstract class TransactionEvent with _$TransactionEvent {
     required String type,
     required String categoryId,
   }) = TransactionCreated;
+
+  const factory TransactionEvent.deleted(String id) = TransactionDeleted;
 }

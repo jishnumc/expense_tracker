@@ -42,6 +42,11 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   }
 
   @override
+  Future<void> deleteTransaction(String id) async {
+    await _localDataSource.deleteTransaction(id);
+  }
+
+  @override
   Future<double> getTotalIncomeForCurrentMonth() async {
     return await _localDataSource.getTotalIncomeForCurrentMonth();
   }

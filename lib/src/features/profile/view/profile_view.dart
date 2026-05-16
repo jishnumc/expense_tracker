@@ -47,154 +47,142 @@ class ProfileView extends StatelessWidget {
       }
     }
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) =>
-              sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
-        ),
-        BlocProvider(
-          create: (context) =>
-              sl<ProfileBloc>()..add(const ProfileEvent.fetched()),
-        ),
-      ],
-      child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Text(
-                  'Profile',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                const ETNicknameEditor(initialNickname: 'Naazley'),
-                const SizedBox(height: 32),
-                BlocBuilder<ProfileBloc, ProfileState>(
-                  builder: (context, state) {
-                    return state.maybeWhen(
-                      loading: () => const Skeletonizer(
-                        enabled: true,
-                        child: ETAlertLimitEditor(currentLimit: 0),
-                      ),
-                      success: (profile) => ETAlertLimitEditor(
-                        currentLimit: profile.budgetLimit,
-                        onSet: (limit) {
-                          context.read<ProfileBloc>().add(
-                            ProfileEvent.budgetLimitUpdated(limit),
-                          );
-                        },
-                      ),
-                      error: (message) => ETAlertLimitEditor(
-                        currentLimit: 0,
-                        onSet: (limit) {
-                          context.read<ProfileBloc>().add(
-                            ProfileEvent.budgetLimitUpdated(limit),
-                          );
-                        },
-                      ),
-                      orElse: () => const ETAlertLimitEditor(currentLimit: 0),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-                BlocBuilder<CategoryBloc, CategoryState>(
-                  builder: (context, state) {
-                    return state.maybeWhen(
-                      loading: () => Skeletonizer(
-                        enabled: true,
-                        child: ETCategoryEditor(
-                          categories: [
-                            Category(id: '1', name: 'Loading'),
-                            Category(id: '2', name: 'Loading'),
-                            Category(id: '3', name: 'Loading'),
-                          ],
-                        ),
-                      ),
-                      success: (categories) => ETCategoryEditor(
-                        categories: categories,
-                        onAdd: (name) {
-                          context.read<CategoryBloc>().add(
-                            CategoryEvent.created(name),
-                          );
-                        },
-                        onDelete: (category) async {
-                          final shouldDelete = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => ETAlertDialog(
-                              title: 'Delete Category',
-                              content:
-                                  'Are you sure you want to delete "${category.name}"? This action cannot be undone.',
-                              cancelLabel: 'Cancel',
-                              confirmLabel: 'Delete',
-                              isDestructive: true,
-                            ),
-                          );
-
-                          if (shouldDelete == true && context.mounted) {
-                            context.read<CategoryBloc>().add(
-                              CategoryEvent.deleted(category.id),
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                'Profile',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 32),
+              const ETNicknameEditor(initialNickname: 'Naazley'),
+              const SizedBox(height: 32),
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    loading: () => const Skeletonizer(
+                      enabled: true,
+                      child: ETAlertLimitEditor(currentLimit: 0),
+                    ),
+                    success: (profile) => ETAlertLimitEditor(
+                      currentLimit: profile.budgetLimit,
+                      onSet: (limit) {
+                        context.read<ProfileBloc>().add(
+                              ProfileEvent.budgetLimitUpdated(limit),
                             );
-                          }
-                        },
-                      ),
-                      error: (message) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ETCategoryEditor(
-                            categories: const [],
-                            onAdd: (name) {
-                              context.read<CategoryBloc>().add(
-                                CategoryEvent.created(name),
-                              );
-                            },
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: colors.error,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
+                      },
+                    ),
+                    error: (message) => ETAlertLimitEditor(
+                      currentLimit: 0,
+                      onSet: (limit) {
+                        context.read<ProfileBloc>().add(
+                              ProfileEvent.budgetLimitUpdated(limit),
+                            );
+                      },
+                    ),
+                    orElse: () => const ETAlertLimitEditor(currentLimit: 0),
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+              BlocBuilder<CategoryBloc, CategoryState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    loading: () => Skeletonizer(
+                      enabled: true,
+                      child: ETCategoryEditor(
+                        categories: [
+                          Category(id: '1', name: 'Loading'),
+                          Category(id: '2', name: 'Loading'),
+                          Category(id: '3', name: 'Loading'),
                         ],
                       ),
-                      orElse: () => const SizedBox.shrink(),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-                const ETCloudSyncCard(),
-                const SizedBox(height: 32),
-                BlocListener<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    state.maybeWhen(
-                      initial: () => context.go('/login'),
-                      orElse: () {},
-                    );
-                  },
-                  child: ETSecondaryButton(
-                    label: 'Log Out',
-                    onPressed: handleLogout,
-                    icon: Icon(
-                      Icons.power_settings_new,
-                      color: context.zAppColors.error,
-                      size: 28,
                     ),
+                    success: (categories) => ETCategoryEditor(
+                      categories: categories,
+                      onAdd: (name) {
+                        context.read<CategoryBloc>().add(
+                              CategoryEvent.created(name),
+                            );
+                      },
+                      onDelete: (category) async {
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => ETAlertDialog(
+                            title: 'Delete Category',
+                            content:
+                                'Are you sure you want to delete "${category.name}"? This action cannot be undone.',
+                            cancelLabel: 'Cancel',
+                            confirmLabel: 'Delete',
+                            isDestructive: true,
+                          ),
+                        );
+
+                        if (shouldDelete == true && context.mounted) {
+                          context.read<CategoryBloc>().add(
+                                CategoryEvent.deleted(category.id),
+                              );
+                        }
+                      },
+                    ),
+                    error: (message) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ETCategoryEditor(
+                          categories: const [],
+                          onAdd: (name) {
+                            context.read<CategoryBloc>().add(
+                                  CategoryEvent.created(name),
+                                );
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            message,
+                            style: TextStyle(
+                              color: colors.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    orElse: () => const SizedBox.shrink(),
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+              const ETCloudSyncCard(),
+              const SizedBox(height: 32),
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  state.maybeWhen(
+                    initial: () => context.go('/login'),
+                    orElse: () {},
+                  );
+                },
+                child: ETSecondaryButton(
+                  label: 'Log Out',
+                  onPressed: handleLogout,
+                  icon: Icon(
+                    Icons.power_settings_new,
+                    color: context.zAppColors.error,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(height: 120), // Extra space for bottom nav
-              ],
-            ),
+              ),
+              const SizedBox(height: 120), // Extra space for bottom nav
+            ],
           ),
         ),
       ),

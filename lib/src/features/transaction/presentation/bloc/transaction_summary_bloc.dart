@@ -20,6 +20,31 @@ class TransactionSummaryBloc
        _profileRepository = profileRepository,
        super(const TransactionSummaryState.initial()) {
     on<TransactionSummaryFetched>(_onFetched);
+    on<TransactionSummaryDeleted>(_onDeleted);
+  }
+
+  Future<void> _onDeleted(
+    TransactionSummaryDeleted event,
+    Emitter<TransactionSummaryState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is TransactionSummarySuccess) {
+      // Immediate UI update: Filter out the deleted transaction
+      final updatedTransactions = currentState.recentTransactions
+          .where((t) => t.id != event.id)
+          .toList();
+
+      emit(currentState.copyWith(recentTransactions: updatedTransactions));
+
+      try {
+        await _transactionRepository.deleteTransaction(event.id);
+        // Refresh to update totals
+        add(const TransactionSummaryEvent.fetched());
+      } catch (e) {
+        // Refresh to restore state on error
+        add(const TransactionSummaryEvent.fetched());
+      }
+    }
   }
 
   Future<void> _onFetched(
@@ -32,7 +57,7 @@ class TransactionSummaryBloc
         _transactionRepository.getTotalIncomeForCurrentMonth(),
         _transactionRepository.getTotalExpensesForCurrentMonth(),
         _profileRepository.getProfile().then((p) => p.budgetLimit),
-        _transactionRepository.getRecentTransactions(limit: 10),
+        _transactionRepository.getRecentTransactions(limit: 5),
       ]);
 
       emit(

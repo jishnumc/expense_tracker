@@ -11,6 +11,8 @@ import 'package:expense_tracker/src/system/di/injection.dart' as di;
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
 import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
+import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,14 @@ class MyApp extends StatelessWidget {
               sl<AuthBloc>()..add(const AuthEvent.checkStatusRequested()),
         ),
         BlocProvider(create: (context) => sl<TransactionBloc>()),
+        BlocProvider(
+          create: (context) =>
+              sl<ProfileBloc>()..add(const ProfileEvent.fetched()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

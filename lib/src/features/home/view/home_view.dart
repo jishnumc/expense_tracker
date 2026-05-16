@@ -5,6 +5,7 @@ import 'package:expense_tracker/src/features/home/widgets/et_summary_card.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_transaction_tile.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_summary_bloc.dart';
+import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -106,9 +107,17 @@ class _HomeView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      ETMonthlyLimitCard(
-                        spentAmount: expense,
-                        totalLimit: limit,
+                      BlocBuilder<ProfileBloc, ProfileState>(
+                        builder: (context, profileState) {
+                          final budgetLimit = profileState.maybeWhen(
+                            success: (profile) => profile.budgetLimit,
+                            orElse: () => limit,
+                          );
+                          return ETMonthlyLimitCard(
+                            spentAmount: expense,
+                            totalLimit: budgetLimit,
+                          );
+                        },
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -141,6 +150,25 @@ class _HomeView extends StatelessWidget {
                                   date: DateFormat('d MMMM y').format(tx.createdAt),
                                   isExpense: tx.type == 'debit',
                                   icon: _getIconForCategory(tx.categoryName),
+                                  onDelete: () async {
+                                    final shouldDelete = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => ETAlertDialog(
+                                        title: 'Delete Transaction',
+                                        content:
+                                            'Are you sure you want to delete this transaction for ₹${tx.amount.toInt()}? This action cannot be undone.',
+                                        cancelLabel: 'Cancel',
+                                        confirmLabel: 'Delete',
+                                        isDestructive: true,
+                                      ),
+                                    );
+
+                                    if (shouldDelete == true && context.mounted) {
+                                      context.read<TransactionSummaryBloc>().add(
+                                            TransactionSummaryEvent.deleted(tx.id),
+                                          );
+                                    }
+                                  },
                                 );
                               },
                             ),
