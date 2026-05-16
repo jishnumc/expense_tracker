@@ -29,26 +29,13 @@ class ProfileView extends StatelessWidget {
       if (hasUnsynced) {
         final shouldLogout = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: context.zAppColors.surface,
-            title: Text(
-              'Unsynced Data',
-              style: TextStyle(color: context.zAppColors.white),
-            ),
-            content: Text(
-              'You have data that is not synced to the cloud. This data will be lost if you log out. Are you sure you want to proceed?',
-              style: TextStyle(color: context.zAppColors.white.withValues(alpha: 0.7)),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancel', style: TextStyle(color: context.zAppColors.white)),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Log Out', style: TextStyle(color: context.zAppColors.error)),
-              ),
-            ],
+          builder: (context) => const ETAlertDialog(
+            title: 'Unsynced Data',
+            content:
+                'You have data that is not synced to the cloud. This data will be lost if you log out. Are you sure you want to proceed?',
+            cancelLabel: 'Cancel',
+            confirmLabel: 'Log Out',
+            isDestructive: true,
           ),
         );
 
@@ -63,10 +50,12 @@ class ProfileView extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
+          create: (context) =>
+              sl<CategoryBloc>()..add(const CategoryEvent.fetched()),
         ),
         BlocProvider(
-          create: (context) => sl<ProfileBloc>()..add(const ProfileEvent.fetched()),
+          create: (context) =>
+              sl<ProfileBloc>()..add(const ProfileEvent.fetched()),
         ),
       ],
       child: Scaffold(
@@ -132,10 +121,28 @@ class ProfileView extends StatelessWidget {
                       success: (categories) => ETCategoryEditor(
                         categories: categories,
                         onAdd: (name) {
-                          context.read<CategoryBloc>().add(CategoryEvent.created(name));
+                          context.read<CategoryBloc>().add(
+                            CategoryEvent.created(name),
+                          );
                         },
-                        onDelete: (category) {
-                          context.read<CategoryBloc>().add(CategoryEvent.deleted(category.id));
+                        onDelete: (category) async {
+                          final shouldDelete = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => ETAlertDialog(
+                              title: 'Delete Category',
+                              content:
+                                  'Are you sure you want to delete "${category.name}"? This action cannot be undone.',
+                              cancelLabel: 'Cancel',
+                              confirmLabel: 'Delete',
+                              isDestructive: true,
+                            ),
+                          );
+
+                          if (shouldDelete == true && context.mounted) {
+                            context.read<CategoryBloc>().add(
+                              CategoryEvent.deleted(category.id),
+                            );
+                          }
                         },
                       ),
                       error: (message) => Column(
@@ -144,14 +151,19 @@ class ProfileView extends StatelessWidget {
                           ETCategoryEditor(
                             categories: const [],
                             onAdd: (name) {
-                              context.read<CategoryBloc>().add(CategoryEvent.created(name));
+                              context.read<CategoryBloc>().add(
+                                CategoryEvent.created(name),
+                              );
                             },
                           ),
                           Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               message,
-                              style: TextStyle(color: colors.error, fontSize: 12),
+                              style: TextStyle(
+                                color: colors.error,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],

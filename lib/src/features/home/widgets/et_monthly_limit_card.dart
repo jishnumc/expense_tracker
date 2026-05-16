@@ -69,7 +69,11 @@ class ETMonthlyLimitCard extends StatelessWidget {
               value: progress,
               minHeight: 8,
               backgroundColor: colors.white.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(colors.success),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                spentAmount > totalLimit
+                    ? colors.expenseSecondary
+                    : colors.success,
+              ),
             ),
           ),
           const SizedBox(height: 12),

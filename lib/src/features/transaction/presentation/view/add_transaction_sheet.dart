@@ -127,8 +127,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                         ),
                       ],
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return 'Please enter amount';
+                        }
                         final result = const AmountValidator().validate(value);
                         if (result is ValidationFailure) {
                           return result.error.message;
