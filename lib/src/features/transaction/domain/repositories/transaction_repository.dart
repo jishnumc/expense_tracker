@@ -6,4 +6,7 @@ abstract interface class ITransactionRepository {
   Future<void> createCategory(String name);
   Future<void> deleteCategory(String id);
   Future<void> createTransaction(Transaction transaction);
+  Future<double> getTotalIncomeForCurrentMonth();
+  Future<double> getTotalExpensesForCurrentMonth();
+  Future<List<Transaction>> getRecentTransactions({int limit = 10});
 }

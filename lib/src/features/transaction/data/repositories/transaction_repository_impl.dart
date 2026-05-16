@@ -41,6 +41,35 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     await _localDataSource.insertTransaction(model.toMap());
   }
 
+  @override
+  Future<double> getTotalIncomeForCurrentMonth() async {
+    return await _localDataSource.getTotalIncomeForCurrentMonth();
+  }
+
+  @override
+  Future<double> getTotalExpensesForCurrentMonth() async {
+    return await _localDataSource.getTotalExpensesForCurrentMonth();
+  }
+
+  @override
+  Future<List<Transaction>> getRecentTransactions({int limit = 10}) async {
+    final maps = await _localDataSource.getRecentTransactions(limit);
+    return maps.map((map) {
+      final model = TransactionModel.fromMap(map);
+      return Transaction(
+        id: model.id,
+        amount: model.amount,
+        note: model.note,
+        type: model.type,
+        categoryId: model.categoryId,
+        categoryName: map['category_name'] as String?,
+        isSynced: model.isSynced,
+        isDeleted: model.isDeleted,
+        createdAt: model.createdAt,
+      );
+    }).toList();
+  }
+
   Future<List<Map<String, dynamic>>> getLocalTransactions() async {
     return await _localDataSource.getTransactionsWithCategory();
   }

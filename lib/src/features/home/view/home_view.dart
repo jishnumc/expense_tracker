@@ -3,17 +3,53 @@ import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_b
 import 'package:expense_tracker/src/features/home/widgets/et_monthly_limit_card.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_summary_card.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_transaction_tile.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_summary_bloc.dart';
+import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => sl<TransactionSummaryBloc>()
+        ..add(const TransactionSummaryEvent.fetched()),
+      child: BlocListener<TransactionBloc, TransactionState>(
+        listener: (context, state) {
+          state.maybeWhen(
+            success: () {
+              context.read<TransactionSummaryBloc>().add(
+                const TransactionSummaryEvent.fetched(),
+              );
+            },
+            orElse: () {},
+          );
+        },
+        child: const _HomeView(),
+      ),
+    );
+  }
+}
+
+class _HomeView extends StatelessWidget {
+  const _HomeView();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+    final textTheme = Theme.of(context).textTheme;
+    final currencyFormat = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
     return Scaffold(
-      //floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 120),
         child: ETFloatingActionButton(
@@ -24,115 +60,120 @@ class HomePage extends StatelessWidget {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  final nickname = state.maybeWhen(
-                    authenticated: (user) => user.nickname,
-                    orElse: () => 'User',
-                  );
-                  return Text(
-                    'Welcome, $nickname',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: context.zAppColors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
+          child: BlocBuilder<TransactionSummaryBloc, TransactionSummaryState>(
+            builder: (context, state) {
+              return state.maybeWhen(
+                success: (income, expense, limit, recentTransactions) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, state) {
+                          final nickname = state.maybeWhen(
+                            authenticated: (user) => user.nickname,
+                            orElse: () => 'User',
+                          );
+                          return Text(
+                            'Welcome, $nickname',
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ETSummaryCard(
+                              title: 'Total Income',
+                              amount: currencyFormat.format(income).replaceAll('₹', ''),
+                              isIncome: true,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ETSummaryCard(
+                              title: 'Total Expense',
+                              amount: currencyFormat.format(expense).replaceAll('₹', ''),
+                              isIncome: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      ETMonthlyLimitCard(
+                        spentAmount: expense,
+                        totalLimit: limit,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Recent Transactions',
+                        style: textTheme.titleLarge?.copyWith(
+                          color: colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: recentTransactions.isEmpty
+                            ? Center(
+                              child: Text(
+                                'No transactions yet',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: colors.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            )
+                            : ListView.builder(
+                              itemCount: recentTransactions.length,
+                              padding: const EdgeInsets.only(bottom: 120),
+                              itemBuilder: (context, index) {
+                                final tx = recentTransactions[index];
+                                return ETTransactionTile(
+                                  title: tx.note,
+                                  category: tx.categoryName ?? 'Other',
+                                  amount: tx.amount,
+                                  date: DateFormat('d MMMM y').format(tx.createdAt),
+                                  isExpense: tx.type == 'debit',
+                                  icon: _getIconForCategory(tx.categoryName),
+                                );
+                              },
+                            ),
+                      ),
+                    ],
                   );
                 },
-              ),
-              const SizedBox(height: 24),
-              const Row(
-                children: [
-                  Expanded(
-                    child: ETSummaryCard(
-                      title: 'Total Income',
-                      amount: '90,000',
-                      isIncome: true,
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: ETSummaryCard(
-                      title: 'Total Expense',
-                      amount: '36,345',
-                      isIncome: false,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const ETMonthlyLimitCard(spentAmount: 7324, totalLimit: 10000),
-              const SizedBox(height: 24),
-              Text(
-                'Recent Transactions',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: context.zAppColors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _mockTransactions.length,
-                  padding: const EdgeInsets.only(
-                    bottom: 50,
-                  ), // Space for bottom nav
-                  itemBuilder: (context, index) {
-                    final tx = _mockTransactions[index];
-                    return ETTransactionTile(
-                      title: tx.title,
-                      category: tx.category,
-                      amount: tx.amount,
-                      date: tx.date,
-                      isExpense: tx.isExpense,
-                      icon: tx.icon,
-                    );
-                  },
-                ),
-              ),
-            ],
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (message) => Center(child: Text(message)),
+                orElse: () => const SizedBox.shrink(),
+              );
+            },
           ),
         ),
       ),
     );
   }
-}
 
-final _mockTransactions = [
-  (
-    title: 'Grocery Store',
-    category: 'Food',
-    amount: 36345.0,
-    date: '12th Dec 2026',
-    isExpense: true,
-    icon: Icons.shopping_cart,
-  ),
-  (
-    title: 'Electricity Bill',
-    category: 'Bills',
-    amount: 379.0,
-    date: '12th Dec 2026',
-    isExpense: false,
-    icon: Icons.water_drop,
-  ),
-  (
-    title: 'Uber Ride',
-    category: 'Transport',
-    amount: 150.0,
-    date: '11th Dec 2026',
-    isExpense: true,
-    icon: Icons.directions_car,
-  ),
-  (
-    title: 'Salary',
-    category: 'Income',
-    amount: 90000.0,
-    date: '1st Dec 2026',
-    isExpense: false,
-    icon: Icons.account_balance_wallet,
-  ),
-];
+  IconData _getIconForCategory(String? category) {
+    switch (category?.toLowerCase()) {
+      case 'food':
+        return Icons.restaurant;
+      case 'shopping':
+        return Icons.shopping_bag;
+      case 'transport':
+        return Icons.directions_car;
+      case 'health':
+        return Icons.medical_services;
+      case 'salary':
+        return Icons.payments;
+      case 'bills':
+        return Icons.receipt_long;
+      default:
+        return Icons.category;
+    }
+  }
+}

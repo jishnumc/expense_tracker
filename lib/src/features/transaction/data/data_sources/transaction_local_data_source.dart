@@ -8,6 +8,9 @@ abstract class TransactionLocalDataSource {
   Future<void> createCategory(Category category);
   Future<void> insertTransaction(Map<String, dynamic> transaction);
   Future<List<Map<String, dynamic>>> getTransactionsWithCategory();
+  Future<double> getTotalIncomeForCurrentMonth();
+  Future<double> getTotalExpensesForCurrentMonth();
+  Future<List<Map<String, dynamic>>> getRecentTransactions(int limit);
   Future<void> deleteCategory(String id);
   String generateUuid();
 }
@@ -73,6 +76,43 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   @override
   Future<List<Map<String, dynamic>>> getTransactionsWithCategory() async {
     return await _dbClient.getTransactionsWithCategory();
+  }
+
+  @override
+  Future<double> getTotalIncomeForCurrentMonth() async {
+    final db = await _dbClient.database;
+    final result = await db.rawQuery('''
+      SELECT SUM(amount) as total FROM transactions 
+      WHERE type = 'credit' 
+      AND is_deleted = 0 
+      AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now', 'localtime')
+    ''');
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  @override
+  Future<double> getTotalExpensesForCurrentMonth() async {
+    final db = await _dbClient.database;
+    final result = await db.rawQuery('''
+      SELECT SUM(amount) as total FROM transactions 
+      WHERE type = 'debit' 
+      AND is_deleted = 0 
+      AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now', 'localtime')
+    ''');
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRecentTransactions(int limit) async {
+    final db = await _dbClient.database;
+    return await db.rawQuery('''
+      SELECT t.*, c.name as category_name 
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.is_deleted = 0
+      ORDER BY t.created_at DESC
+      LIMIT ?
+    ''', [limit]);
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:expense_tracker/src/router/app_router.dart';
 import 'package:expense_tracker/src/system/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart' as di;
 import 'package:expense_tracker/src/system/di/injection.dart';
@@ -25,8 +26,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const textTheme = TextThemeNative();
-    return BlocProvider(
-      create: (context) => sl<AuthBloc>()..add(const AuthEvent.checkStatusRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              sl<AuthBloc>()..add(const AuthEvent.checkStatusRequested()),
+        ),
+        BlocProvider(create: (context) => sl<TransactionBloc>()),
+      ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'Expense Tracker',

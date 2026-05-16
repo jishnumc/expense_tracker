@@ -4,6 +4,7 @@ class Transaction {
   final String note;
   final String type; // 'credit' or 'debit'
   final String categoryId;
+  final String? categoryName;
   final int isSynced;
   final int isDeleted;
   final DateTime createdAt;
@@ -14,6 +15,7 @@ class Transaction {
     required this.note,
     required this.type,
     required this.categoryId,
+    this.categoryName,
     this.isSynced = 0,
     this.isDeleted = 0,
     required this.createdAt,
