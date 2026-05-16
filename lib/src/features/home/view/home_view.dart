@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -147,7 +148,15 @@ class _HomeView extends StatelessWidget {
                     ],
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => Skeletonizer(
+                  enabled: true,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 200),
+                      Center(child: Text('Loading dashboard...')),
+                    ],
+                  ),
+                ),
                 error: (message) => Center(child: Text(message)),
                 orElse: () => const SizedBox.shrink(),
               );

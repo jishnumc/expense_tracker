@@ -36,9 +36,11 @@ class _LoginViewState extends State<LoginView> {
             context.go('/otp-verification');
           },
           error: (message) {
-            ScaffoldMessenger.of(
+            ETSnackBar.show(
               context,
-            ).showSnackBar(SnackBar(content: Text(message)));
+              message: message,
+              type: ETSnackBarType.error,
+            );
           },
           orElse: () {},
         );
@@ -108,10 +110,10 @@ class _LoginViewState extends State<LoginView> {
                         orElse: () => () {
                           final phone = _phoneController.text.trim();
                           if (phone.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please enter your phone number'),
-                              ),
+                            ETSnackBar.show(
+                              context,
+                              message: 'Please enter your phone number',
+                              type: ETSnackBarType.error,
                             );
                             return;
                           }
