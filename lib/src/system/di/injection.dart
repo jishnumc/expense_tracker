@@ -74,7 +74,7 @@ Future<void> init() async {
     ),
   );
   sl.registerLazySingleton<ITransactionRepository>(
-    () => TransactionRepositoryImpl(sl()),
+    () => TransactionRepositoryImpl(sl(), sl()),
   );
   sl.registerLazySingleton<IProfileRepository>(
     () => ProfileRepositoryImpl(sl()),
@@ -92,6 +92,7 @@ Future<void> init() async {
     () => AuthBloc(
       authRepository: sl(),
       phoneValidator: sl(),
+      syncRepository: sl(),
     ),
   );
   sl.registerFactory(() => CategoryBloc(transactionRepository: sl()));

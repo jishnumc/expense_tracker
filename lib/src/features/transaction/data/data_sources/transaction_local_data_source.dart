@@ -7,6 +7,7 @@ abstract class TransactionLocalDataSource {
   Future<List<Category>> getCategories();
   Future<void> createCategory(Category category);
   Future<void> insertTransaction(Map<String, dynamic> transaction);
+  Future<void> saveTransactions(List<Map<String, dynamic>> transactions);
   Future<List<Map<String, dynamic>>> getTransactionsWithCategory();
   Future<List<Map<String, dynamic>>> getAllTransactions();
   Future<double> getTotalIncomeForCurrentMonth();
@@ -84,6 +85,18 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   Future<void> insertTransaction(Map<String, dynamic> transaction) async {
     final db = await _dbClient.database;
     await db.insert('transactions', transaction);
+  }
+
+  @override
+  Future<void> saveTransactions(List<Map<String, dynamic>> transactions) async {
+    final db = await _dbClient.database;
+    final batch = db.batch();
+
+    for (final transaction in transactions) {
+      batch.insert('transactions', transaction);
+    }
+
+    await batch.commit(noResult: true);
   }
 
   @override

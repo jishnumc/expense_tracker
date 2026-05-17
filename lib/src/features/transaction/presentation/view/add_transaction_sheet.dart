@@ -6,7 +6,7 @@ import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
 
 class AddTransactionSheet extends StatefulWidget {
@@ -356,26 +356,21 @@ class _CategoryShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(
-          5,
-          (index) => Shimmer.fromColors(
-            baseColor: colors.white.withValues(alpha: 0.1),
-            highlightColor: colors.white.withValues(alpha: 0.2),
-            child: Container(
+    return Skeletonizer(
+      enabled: true,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+            5,
+            (index) => Container(
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
                 color: colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Container(
-                width: 60,
-                height: 16,
-                color: colors.white.withValues(alpha: 0.1),
-              ),
+              child: const Text('Category'),
             ),
           ),
         ),

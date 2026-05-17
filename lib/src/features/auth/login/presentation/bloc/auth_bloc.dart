@@ -2,8 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/entities/user.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/repositories/auth_repository.dart';
+import 'package:expense_tracker/src/features/profile/domain/repositories/sync_repository.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
+import 'package:expense_tracker/src/system/utils/logger.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -12,12 +14,15 @@ part 'auth_bloc.freezed.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository _authRepository;
   final PhoneValidator _phoneValidator;
+  final ISyncRepository _syncRepository;
 
   AuthBloc({
     required IAuthRepository authRepository,
     required PhoneValidator phoneValidator,
+    required ISyncRepository syncRepository,
   }) : _authRepository = authRepository,
        _phoneValidator = phoneValidator,
+       _syncRepository = syncRepository,
        super(const AuthState.initial()) {
     on<AuthSendOtpRequested>(_onSendOtpRequested);
     on<AuthVerifyOtpRequested>(_onVerifyOtpRequested);
@@ -48,6 +53,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               phone: event.phone,
             );
             await _authRepository.saveUser(user);
+
+            try {
+              talker.info('AuthBloc: Existing user login, restoring data from cloud...');
+              await _syncRepository.restoreDataFromServer();
+            } catch (e) {
+              talker.error('AuthBloc: Failed to restore data during login', e);
+            }
+
             emit(AuthState.authenticated(user));
           } else {
             emit(
@@ -84,6 +97,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           phone: event.phone,
         );
         await _authRepository.saveUser(user);
+
+        try {
+          talker.info('AuthBloc: Existing user OTP verified, restoring data from cloud...');
+          await _syncRepository.restoreDataFromServer();
+        } catch (e) {
+          talker.error('AuthBloc: Failed to restore data during OTP verification', e);
+        }
+
         emit(AuthState.authenticated(user));
       } else {
         emit(

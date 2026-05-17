@@ -3,11 +3,14 @@ import 'package:expense_tracker/src/features/transaction/domain/entities/categor
 import 'package:expense_tracker/src/features/transaction/domain/entities/transaction.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
 import 'package:expense_tracker/src/features/transaction/data/models/transaction_model.dart';
+import 'package:expense_tracker/src/features/transaction/data/services/transaction_service.dart';
+import 'package:expense_tracker/src/system/utils/logger.dart';
 
 class TransactionRepositoryImpl implements ITransactionRepository {
   final TransactionLocalDataSource _localDataSource;
+  final TransactionService _transactionService;
 
-  TransactionRepositoryImpl(this._localDataSource);
+  TransactionRepositoryImpl(this._localDataSource, this._transactionService);
 
   @override
   Future<List<Category>> getCategories() async {
@@ -18,7 +21,34 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   Future<void> createCategory(String name) async {
     final id = _localDataSource.generateUuid();
     final category = Category(id: id, name: name);
-    await _localDataSource.createCategory(category);
+
+    try {
+      final response = await _transactionService.addCategory({
+        'category_id': id,
+        'name': name,
+      });
+
+      if (!response.isSuccessful) {
+        final errorVal = response.error ?? response.body;
+        final errorStr = errorVal?.toString() ?? '';
+        
+        throw Exception(errorStr.isNotEmpty ? errorStr : 'Failed to sync new category to remote');
+      }
+      
+      // If remote succeeds, save locally and mark as synced
+      await _localDataSource.createCategory(category);
+      await _localDataSource.markCategoriesAsSynced([id]);
+    } catch (e, stackTrace) {
+      talker.error('Failed to instantly sync category to remote', e, stackTrace);
+      
+      final isConflict = e.toString().toLowerCase().contains('already exists');
+      if (!isConflict) {
+        // If it's a network error/timeout (and NOT a duplicate conflict), we save locally to sync later
+        await _localDataSource.createCategory(category);
+      }
+      
+      rethrow;
+    }
   }
 
   @override

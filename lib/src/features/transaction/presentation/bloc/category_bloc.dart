@@ -27,6 +27,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       add(const CategoryEvent.fetched());
     } catch (e) {
       emit(CategoryState.error(e.toString()));
+      add(const CategoryEvent.fetched());
     }
   }
 
@@ -39,6 +40,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       add(const CategoryEvent.fetched());
     } catch (e) {
       emit(CategoryState.error(e.toString()));
+      add(const CategoryEvent.fetched());
     }
   }
 

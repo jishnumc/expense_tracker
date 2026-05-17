@@ -16,8 +16,24 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class ProfileView extends StatelessWidget {
+class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CategoryBloc>().add(const CategoryEvent.fetched());
+        context.read<ProfileBloc>().add(const ProfileEvent.fetched());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,72 +174,75 @@ class ProfileView extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 32),
-                      BlocBuilder<CategoryBloc, CategoryState>(
-                        builder: (context, state) {
-                          return state.maybeWhen(
-                            loading: () => Skeletonizer(
-                              enabled: true,
-                              child: ETCategoryEditor(
-                                categories: [
-                                  Category(id: '1', name: 'Loading'),
-                                  Category(id: '2', name: 'Loading'),
-                                  Category(id: '3', name: 'Loading'),
-                                ],
-                              ),
-                            ),
-                            success: (categories) => ETCategoryEditor(
-                              categories: categories,
-                              onAdd: (name) {
-                                context.read<CategoryBloc>().add(
-                                      CategoryEvent.created(name),
-                                    );
-                              },
-                              onDelete: (category) async {
-                                final shouldDelete = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => ETAlertDialog(
-                                    title: 'Delete Category',
-                                    content:
-                                        'Are you sure you want to delete "${category.name}"? This action cannot be undone.',
-                                    cancelLabel: 'Cancel',
-                                    confirmLabel: 'Delete',
-                                    isDestructive: true,
-                                  ),
-                                );
-
-                                if (shouldDelete == true && context.mounted) {
-                                  context.read<CategoryBloc>().add(
-                                        CategoryEvent.deleted(category.id),
-                                      );
-                                }
-                              },
-                            ),
-                            error: (message) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ETCategoryEditor(
-                                  categories: const [],
-                                  onAdd: (name) {
-                                    context.read<CategoryBloc>().add(
-                                          CategoryEvent.created(name),
-                                        );
-                                  },
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    message,
-                                    style: TextStyle(
-                                      color: colors.error,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            orElse: () => const SizedBox.shrink(),
+                      BlocListener<CategoryBloc, CategoryState>(
+                        listener: (context, state) {
+                          state.maybeWhen(
+                            error: (message) {
+                              ETSnackBar.show(
+                                context,
+                                message: message,
+                                type: ETSnackBarType.error,
+                              );
+                            },
+                            orElse: () {},
                           );
                         },
+                        child: BlocBuilder<CategoryBloc, CategoryState>(
+                          builder: (context, state) {
+                            return state.maybeWhen(
+                              loading: () => Skeletonizer(
+                                enabled: true,
+                                child: ETCategoryEditor(
+                                  categories: [
+                                    Category(id: '1', name: 'Loading'),
+                                    Category(id: '2', name: 'Loading'),
+                                    Category(id: '3', name: 'Loading'),
+                                  ],
+                                ),
+                              ),
+                              success: (categories) => ETCategoryEditor(
+                                categories: categories,
+                                onAdd: (name) {
+                                  context.read<CategoryBloc>().add(
+                                        CategoryEvent.created(name),
+                                      );
+                                  // Re-fetch category list on add attempt
+                                  context.read<CategoryBloc>().add(
+                                        const CategoryEvent.fetched(),
+                                      );
+                                },
+                                onDelete: (category) async {
+                                  final shouldDelete = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => ETAlertDialog(
+                                      title: 'Delete Category',
+                                      content:
+                                          'Are you sure you want to delete "${category.name}"? This action cannot be undone.',
+                                      cancelLabel: 'Cancel',
+                                      confirmLabel: 'Delete',
+                                      isDestructive: true,
+                                    ),
+                                  );
+
+                                  if (shouldDelete == true && context.mounted) {
+                                    context.read<CategoryBloc>().add(
+                                          CategoryEvent.deleted(category.id),
+                                        );
+                                  }
+                                },
+                              ),
+                              error: (message) => ETCategoryEditor(
+                                categories: const [],
+                                onAdd: (name) {
+                                  context.read<CategoryBloc>().add(
+                                        CategoryEvent.created(name),
+                                      );
+                                },
+                              ),
+                              orElse: () => const SizedBox.shrink(),
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(height: 32),
                       ETCloudSyncCard(
