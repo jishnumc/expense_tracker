@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +10,29 @@ class ETSnackBar {
     required String message,
     ETSnackBarType type = ETSnackBarType.info,
   }) {
+    String cleanMessage = message;
+
+    // Attempt to extract and parse any JSON string (e.g. from backend error payloads)
+    final jsonRegex = RegExp(r'\{.*\}');
+    final match = jsonRegex.firstMatch(message);
+    if (match != null) {
+      try {
+        final jsonStr = match.group(0)!;
+        final decoded = jsonDecode(jsonStr);
+        if (decoded is Map && decoded.containsKey('message')) {
+          final serverMsg = decoded['message']?.toString();
+          if (serverMsg != null && serverMsg.isNotEmpty) {
+            cleanMessage = serverMsg;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Strip common redundant exception prefixes if any
+    if (cleanMessage.startsWith('Exception: ')) {
+      cleanMessage = cleanMessage.substring('Exception: '.length);
+    }
+
     final colors = context.zAppColors;
     final textTheme = Theme.of(context).textTheme;
 
@@ -43,7 +67,10 @@ class ETSnackBar {
           decoration: BoxDecoration(
             color: const Color(0xFF1E1E1E), // Dark background
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: backgroundColor.withValues(alpha: 0.5), width: 1),
+            border: Border.all(
+              color: backgroundColor.withValues(alpha: 0.5),
+              width: 1,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
@@ -58,7 +85,7 @@ class ETSnackBar {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  message,
+                  cleanMessage,
                   style: textTheme.bodyMedium?.copyWith(
                     color: colors.white,
                     fontWeight: FontWeight.w500,

@@ -57,7 +57,7 @@ class TransactionSummaryBloc
         _transactionRepository.getTotalIncomeForCurrentMonth(),
         _transactionRepository.getTotalExpensesForCurrentMonth(),
         _profileRepository.getProfile().then((p) => p.budgetLimit),
-        _transactionRepository.getRecentTransactions(limit: 5),
+        _transactionRepository.getRecentTransactions(limit: 10),
       ]);
 
       emit(
