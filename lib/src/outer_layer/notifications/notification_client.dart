@@ -1,7 +1,10 @@
+import 'dart:io';
+import 'package:expense_tracker/src/system/utils/logger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 abstract interface class INotificationClient {
   Future<void> initialize();
+  Future<void> requestPermissions();
   Future<void> showNotification({
     required String title,
     required String body,
@@ -23,9 +26,9 @@ class NotificationClient implements INotificationClient {
   Future<void> initialize() async {
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
 
     const initSettings = InitializationSettings(
@@ -42,6 +45,24 @@ class NotificationClient implements INotificationClient {
   }
 
   @override
+  Future<void> requestPermissions() async {
+    // Request Permissions
+    if (Platform.isIOS) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    } else if (Platform.isAndroid) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestNotificationsPermission();
+    }
+  }
+
+  @override
   Future<void> showNotification({
     required String title,
     required String body,
@@ -55,18 +76,26 @@ class NotificationClient implements INotificationClient {
       priority: Priority.high,
     );
 
-    const iosDetails = DarwinNotificationDetails();
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
 
-    await _plugin.show(
-      id: id,
-      title: title,
-      body: body,
-      notificationDetails: details,
-    );
+    try {
+      await _plugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
+    } catch (e, stackTrace) {
+      talker.error('NOTIFICATION ERROR', e, stackTrace);
+    }
   }
 }

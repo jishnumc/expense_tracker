@@ -10,6 +10,9 @@ abstract class TransactionService extends ChopperService {
   @GET(path: 'categories/')
   Future<Response> getCategories();
 
+  @GET(path: 'transactions/')
+  Future<Response> getTransactions();
+
   @POST(path: 'categories/add/')
   Future<Response> addCategory(@Body() Map<String, dynamic> body);
 
