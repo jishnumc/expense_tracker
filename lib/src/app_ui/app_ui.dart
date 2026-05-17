@@ -12,3 +12,4 @@ export 'widgets/inputs/et_otp_field.dart';
 export 'widgets/navigation/et_bottom_nav_bar.dart';
 export 'widgets/notifications/et_snackbar.dart';
 export 'widgets/notifications/et_alert_dialog.dart';
+export 'widgets/notifications/et_notification_banner.dart';

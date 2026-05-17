@@ -46,7 +46,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
       // Budget Alert Logic
       if (event.type == 'debit') {
-        final totalExpenses = await _transactionRepository.getTotalExpensesForCurrentMonth();
+        final totalExpenses = await _transactionRepository
+            .getTotalExpensesForCurrentMonth();
         final profile = await _profileRepository.getProfile();
         final limit = profile.budgetLimit > 0 ? profile.budgetLimit : 1000.0;
 
@@ -55,14 +56,16 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         );
 
         if (totalExpenses > limit) {
-          talker.info('Triggering Budget Notification');
-          // Fire and forget to avoid hanging transaction save
-          unawaited(_notificationClient.showNotification(
-            id: DateTime.now().millisecondsSinceEpoch % 100000,
-            title: '🚨 Budget Limit Exceeded!',
-            body:
-                'Your expenses this month have reached ₹${totalExpenses.toStringAsFixed(2)}, pushing you over your limit of ₹${limit.toStringAsFixed(2)}.',
-          ));
+          talker.info('Triggering Budget Notification with delay');
+          // Fire and forget with delay to allow bottom sheet to close smoothly
+          Future.delayed(const Duration(milliseconds: 600), () {
+            _notificationClient.showNotification(
+              id: DateTime.now().millisecondsSinceEpoch % 100000,
+              title: '🚨 Budget Limit Exceeded!',
+              body:
+                  'Your expenses this month have reached ₹${totalExpenses.toStringAsFixed(2)}, pushing you over your limit of ₹${limit.toStringAsFixed(2)}.',
+            );
+          });
         }
       }
 

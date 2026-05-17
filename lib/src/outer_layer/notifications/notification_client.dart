@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:expense_tracker/src/app_ui/widgets/notifications/et_notification_banner.dart';
+import 'package:expense_tracker/src/router/app_router.dart';
 import 'package:expense_tracker/src/system/utils/logger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -13,18 +15,22 @@ abstract interface class INotificationClient {
 }
 
 class NotificationClient implements INotificationClient {
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
 
-  static const AndroidNotificationChannel _budgetChannel = AndroidNotificationChannel(
-    'budget_alerts',
-    'Budget Alerts',
-    description: 'Notifications for budget threshold breaches',
-    importance: Importance.max,
-  );
+  static const AndroidNotificationChannel _budgetChannel =
+      AndroidNotificationChannel(
+        'budget_alerts',
+        'Budget Alerts',
+        description: 'Notifications for budget threshold breaches',
+        importance: Importance.max,
+      );
 
   @override
   Future<void> initialize() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -40,7 +46,9 @@ class NotificationClient implements INotificationClient {
 
     // Create Android channel
     await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_budgetChannel);
   }
 
@@ -68,6 +76,20 @@ class NotificationClient implements INotificationClient {
     required String body,
     int id = 0,
   }) async {
+    // 1. Show custom In-App Notification Banner if the app is in the foreground
+    final navigatorState = AppRouter.navigatorKey.currentState;
+    if (navigatorState != null && navigatorState.mounted) {
+      try {
+        final overlay = navigatorState.overlay;
+        if (overlay != null) {
+          ETNotificationBanner.showOverlay(overlay, title: title, body: body);
+          return; // Skip the OS notification to prevent double-banners while in app
+        }
+      } catch (e, stackTrace) {
+        talker.error('Foreground Banner Error', e, stackTrace);
+      }
+    }
+
     final androidDetails = AndroidNotificationDetails(
       _budgetChannel.id,
       _budgetChannel.name,

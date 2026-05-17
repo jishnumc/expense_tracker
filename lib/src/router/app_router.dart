@@ -29,7 +29,10 @@ class BottomSheetPage<T> extends Page<T> {
 }
 
 class AppRouter {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   static final router = GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashPage()),
