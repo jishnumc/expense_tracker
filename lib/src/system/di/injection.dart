@@ -23,6 +23,10 @@ import 'package:expense_tracker/src/features/transaction/presentation/bloc/trans
 import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:expense_tracker/src/features/transaction/data/services/transaction_service.dart';
+import 'package:expense_tracker/src/features/profile/domain/repositories/sync_repository.dart';
+import 'package:expense_tracker/src/features/profile/data/repositories/sync_repository_impl.dart';
+import 'package:expense_tracker/src/features/profile/presentation/bloc/cloud_sync_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -46,6 +50,7 @@ Future<void> init() async {
 
   // Services
   sl.registerLazySingleton(() => sl<ApiClient>().getService<AuthService>());
+  sl.registerLazySingleton(() => sl<ApiClient>().getService<TransactionService>());
 
   // Data Sources (Remote)
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -73,6 +78,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<IProfileRepository>(
     () => ProfileRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton<ISyncRepository>(
+    () => SyncRepositoryImpl(sl(), sl()),
   );
 
   // Validators
@@ -104,4 +112,5 @@ Future<void> init() async {
       profileRepository: sl(),
     ),
   );
+  sl.registerFactory(() => CloudSyncBloc(syncRepository: sl()));
 }

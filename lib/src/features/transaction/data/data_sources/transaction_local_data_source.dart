@@ -16,6 +16,16 @@ abstract class TransactionLocalDataSource {
   Future<void> deleteCategory(String id);
   Future<void> deleteTransaction(String id);
   String generateUuid();
+  Future<List<Map<String, dynamic>>> getDeletedTransactions();
+  Future<List<Map<String, dynamic>>> getDeletedCategories();
+  Future<void> hardDeleteTransactions(List<String> ids);
+  Future<void> hardDeleteCategories(List<String> ids);
+  Future<List<Map<String, dynamic>>> getUnsyncedCategories();
+  Future<List<Map<String, dynamic>>> getUnsyncedTransactions();
+  Future<void> markCategoriesAsSynced(List<String> ids);
+  Future<void> markTransactionsAsSynced(List<String> ids);
+  Future<int> getCategoriesCount();
+  Future<int> getTransactionsCount();
 }
 
 class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
@@ -169,5 +179,93 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDeletedTransactions() async {
+    final db = await _dbClient.database;
+    return await db.query('transactions', where: 'is_deleted = 1');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDeletedCategories() async {
+    final db = await _dbClient.database;
+    return await db.query('categories', where: 'is_deleted = 1');
+  }
+
+  @override
+  Future<void> hardDeleteTransactions(List<String> ids) async {
+    final db = await _dbClient.database;
+    final batch = db.batch();
+    for (final id in ids) {
+      batch.delete('transactions', where: 'id = ?', whereArgs: [id]);
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> hardDeleteCategories(List<String> ids) async {
+    final db = await _dbClient.database;
+    final batch = db.batch();
+    for (final id in ids) {
+      batch.delete('categories', where: 'id = ?', whereArgs: [id]);
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUnsyncedCategories() async {
+    final db = await _dbClient.database;
+    return await db.query('categories', where: 'is_synced = 0 AND is_deleted = 0');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUnsyncedTransactions() async {
+    final db = await _dbClient.database;
+    return await db.query('transactions', where: 'is_synced = 0 AND is_deleted = 0');
+  }
+
+  @override
+  Future<void> markCategoriesAsSynced(List<String> ids) async {
+    final db = await _dbClient.database;
+    final batch = db.batch();
+    for (final id in ids) {
+      batch.update(
+        'categories',
+        {'is_synced': 1},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> markTransactionsAsSynced(List<String> ids) async {
+    final db = await _dbClient.database;
+    final batch = db.batch();
+    for (final id in ids) {
+      batch.update(
+        'transactions',
+        {'is_synced': 1},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<int> getCategoriesCount() async {
+    final db = await _dbClient.database;
+    final result = await db.rawQuery('SELECT COUNT(*) as count FROM categories');
+    return (result.first['count'] as num?)?.toInt() ?? 0;
+  }
+
+  @override
+  Future<int> getTransactionsCount() async {
+    final db = await _dbClient.database;
+    final result = await db.rawQuery('SELECT COUNT(*) as count FROM transactions');
+    return (result.first['count'] as num?)?.toInt() ?? 0;
   }
 }
