@@ -8,6 +8,7 @@ import 'package:expense_tracker/src/outer_layer/clients/api_client.dart';
 import 'package:expense_tracker/src/outer_layer/clients/storage_client.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
 import 'package:expense_tracker/src/outer_layer/database/database_client.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source.dart';
 import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
 import 'package:expense_tracker/src/features/transaction/data/repositories/transaction_repository_impl.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
@@ -50,7 +51,9 @@ Future<void> init() async {
 
   // Services
   sl.registerLazySingleton(() => sl<ApiClient>().getService<AuthService>());
-  sl.registerLazySingleton(() => sl<ApiClient>().getService<TransactionService>());
+  sl.registerLazySingleton(
+    () => sl<ApiClient>().getService<TransactionService>(),
+  );
 
   // Data Sources (Remote)
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -58,6 +61,9 @@ Future<void> init() async {
   );
 
   // Data Sources (Local)
+  sl.registerLazySingleton<CategoryLocalDataSource>(
+    () => CategoryLocalDataSourceImpl(sl()),
+  );
   sl.registerLazySingleton<TransactionLocalDataSource>(
     () => TransactionLocalDataSourceImpl(sl()),
   );
@@ -74,13 +80,13 @@ Future<void> init() async {
     ),
   );
   sl.registerLazySingleton<ITransactionRepository>(
-    () => TransactionRepositoryImpl(sl(), sl()),
+    () => TransactionRepositoryImpl(sl(), sl(), sl()),
   );
   sl.registerLazySingleton<IProfileRepository>(
     () => ProfileRepositoryImpl(sl()),
   );
   sl.registerLazySingleton<ISyncRepository>(
-    () => SyncRepositoryImpl(sl(), sl()),
+    () => SyncRepositoryImpl(sl(), sl(), sl()),
   );
 
   // Validators
@@ -104,9 +110,7 @@ Future<void> init() async {
       notificationClient: sl(),
     ),
   );
-  sl.registerFactory(
-    () => TransactionListBloc(transactionRepository: sl()),
-  );
+  sl.registerFactory(() => TransactionListBloc(transactionRepository: sl()));
   sl.registerFactory(
     () => TransactionSummaryBloc(
       transactionRepository: sl(),

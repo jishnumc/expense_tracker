@@ -1,4 +1,5 @@
 import 'package:expense_tracker/src/features/profile/domain/repositories/sync_repository.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source.dart';
 import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
 import 'package:expense_tracker/src/features/transaction/data/services/transaction_service.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/category.dart';
@@ -18,10 +19,15 @@ class AlreadySyncedException implements Exception {
 }
 
 class SyncRepositoryImpl implements ISyncRepository {
-  final TransactionLocalDataSource _localDataSource;
+  final TransactionLocalDataSource _transactionLocalDataSource;
+  final CategoryLocalDataSource _categoryLocalDataSource;
   final TransactionService _apiService;
 
-  SyncRepositoryImpl(this._localDataSource, this._apiService);
+  SyncRepositoryImpl(
+    this._transactionLocalDataSource,
+    this._categoryLocalDataSource,
+    this._apiService,
+  );
 
   @override
   Future<void> syncData({
@@ -32,18 +38,17 @@ class SyncRepositoryImpl implements ISyncRepository {
     // ------------------------------------------------------------------
     onProgress(0.02, 'Checking database status...');
 
-    final totalCategories = await _localDataSource.getCategoriesCount();
-    final totalTransactions = await _localDataSource.getTransactionsCount();
+    final totalCategories = await _categoryLocalDataSource.getCategoriesCount();
+    final totalTransactions = await _transactionLocalDataSource.getTransactionsCount();
 
     if (totalCategories == 0 && totalTransactions == 0) {
       throw const FreshDatabaseException();
     }
 
-    final deletedTransactions = await _localDataSource.getDeletedTransactions();
-    final deletedCategories = await _localDataSource.getDeletedCategories();
-    final unsyncedCategories = await _localDataSource.getUnsyncedCategories();
-    final unsyncedTransactions = await _localDataSource
-        .getUnsyncedTransactions();
+    final deletedTransactions = await _transactionLocalDataSource.getDeletedTransactions();
+    final deletedCategories = await _categoryLocalDataSource.getDeletedCategories();
+    final unsyncedCategories = await _categoryLocalDataSource.getUnsyncedCategories();
+    final unsyncedTransactions = await _transactionLocalDataSource.getUnsyncedTransactions();
 
     if (deletedTransactions.isEmpty &&
         deletedCategories.isEmpty &&
@@ -74,7 +79,7 @@ class SyncRepositoryImpl implements ISyncRepository {
       });
       if (response.isSuccessful) {
         onProgress(0.3, 'Purging deleted transactions locally...');
-        await _localDataSource.hardDeleteTransactions(deletedTxIds);
+        await _transactionLocalDataSource.hardDeleteTransactions(deletedTxIds);
       } else {
         throw Exception(
           'Failed to delete transactions from cloud: ${response.error}',
@@ -92,7 +97,7 @@ class SyncRepositoryImpl implements ISyncRepository {
       });
       if (response.isSuccessful) {
         onProgress(0.5, 'Purging deleted categories locally...');
-        await _localDataSource.hardDeleteCategories(deletedCatIds);
+        await _categoryLocalDataSource.hardDeleteCategories(deletedCatIds);
       } else {
         throw Exception(
           'Failed to delete categories from cloud: ${response.error}',
@@ -104,36 +109,6 @@ class SyncRepositoryImpl implements ISyncRepository {
     // Step B: Upload New Data (Cloud Backup)
     // ------------------------------------------------------------------
     onProgress(0.6, 'Scanning unsynced categories...');
-
-    // 1. Sync Categories First
-    // if (unsyncedCategories.isNotEmpty) {
-    //   final successIds = <String>[];
-    //   for (var i = 0; i < unsyncedCategories.length; i++) {
-    //     final categoryMap = unsyncedCategories[i];
-    //     final id = categoryMap['id'] as String;
-    //     final name = categoryMap['name'] as String;
-    //
-    //     onProgress(
-    //       0.6 + (0.15 * (i / unsyncedCategories.length)),
-    //       'Uploading category "$name"...',
-    //     );
-    //
-    //     final response = await _apiService.addCategory({
-    //       'category_id': id,
-    //       'name': name,
-    //     });
-    //
-    //     if (response.isSuccessful) {
-    //       successIds.add(id);
-    //     } else {
-    //       throw Exception('Failed to upload category "$name": ${response.error}');
-    //     }
-    //   }
-    //
-    //   if (successIds.isNotEmpty) {
-    //     await _localDataSource.markCategoriesAsSynced(successIds);
-    //   }
-    // }
 
     onProgress(0.75, 'Scanning unsynced transactions...');
 
@@ -164,7 +139,7 @@ class SyncRepositoryImpl implements ISyncRepository {
             .map((t) => t['id'] as String)
             .toList();
         onProgress(0.9, 'Finalizing sync status locally...');
-        await _localDataSource.markTransactionsAsSynced(successIds);
+        await _transactionLocalDataSource.markTransactionsAsSynced(successIds);
       } else {
         throw Exception(
           'Failed to upload transactions to cloud: ${response.error}',
@@ -223,7 +198,7 @@ class SyncRepositoryImpl implements ISyncRepository {
               categoryId = categoryNameToId[lowerName];
             } else {
               // Create dynamic category reference so SQL schema integrity is perfectly preserved
-              final newId = _localDataSource.generateUuid();
+              final newId = _categoryLocalDataSource.generateUuid();
               categoryNameToId[lowerName] = newId;
               categoriesList.add(Category(id: newId, name: catName));
               categoryId = newId;
@@ -250,10 +225,10 @@ class SyncRepositoryImpl implements ISyncRepository {
 
     // 3. Save to local DB
     if (categoriesList.isNotEmpty) {
-      await _localDataSource.saveCategories(categoriesList);
+      await _categoryLocalDataSource.saveCategories(categoriesList);
     }
     if (transactionsList.isNotEmpty) {
-      await _localDataSource.saveTransactions(transactionsList);
+      await _transactionLocalDataSource.saveTransactions(transactionsList);
     }
   }
 }
