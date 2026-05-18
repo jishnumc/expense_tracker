@@ -107,22 +107,8 @@ class ETSyncProgressDialog extends StatelessWidget {
             // Step-by-Step indicators
             _buildSyncStep(
               context,
-              label: 'Purging deleted records',
-              isActive: progress > 0.0 && progress <= 0.5,
-              isCompleted: progress > 0.5,
-            ),
-            const SizedBox(height: 14),
-            _buildSyncStep(
-              context,
-              label: 'Uploading categories',
-              isActive: progress > 0.5 && progress <= 0.75,
-              isCompleted: progress > 0.75,
-            ),
-            const SizedBox(height: 14),
-            _buildSyncStep(
-              context,
               label: 'Uploading transactions',
-              isActive: progress > 0.75 && progress < 1.0,
+              isActive: progress >= 0.0 && progress < 1.0,
               isCompleted: progress == 1.0,
             ),
             const SizedBox(height: 14),
