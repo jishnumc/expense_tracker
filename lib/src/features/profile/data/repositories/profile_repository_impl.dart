@@ -16,4 +16,9 @@ class ProfileRepositoryImpl implements IProfileRepository {
   Future<void> updateBudgetLimit(double limit) {
     return _localDataSource.updateBudgetLimit(limit);
   }
+
+  @override
+  Future<void> updateNickname(String name) {
+    return _localDataSource.updateNickname(name);
+  }
 }

@@ -4,6 +4,7 @@ import '../models/profile_model.dart';
 abstract interface class ProfileLocalDataSource {
   Future<ProfileModel> getProfile();
   Future<void> updateBudgetLimit(double limit);
+  Future<void> updateNickname(String name);
 }
 
 class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
@@ -36,6 +37,17 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
     await db.update(
       'profile',
       {'budget_limit': limit},
+      where: 'id = ?',
+      whereArgs: ['default'],
+    );
+  }
+
+  @override
+  Future<void> updateNickname(String name) async {
+    final db = await _dbClient.database;
+    await db.update(
+      'profile',
+      {'name': name},
       where: 'id = ?',
       whereArgs: ['default'],
     );

@@ -15,6 +15,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         super(const ProfileState.initial()) {
     on<ProfileFetched>(_onProfileFetched);
     on<ProfileBudgetLimitUpdated>(_onBudgetLimitUpdated);
+    on<ProfileNicknameUpdated>(_onNicknameUpdated);
   }
 
   Future<void> _onProfileFetched(
@@ -36,6 +37,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     try {
       await _profileRepository.updateBudgetLimit(event.limit);
+      add(const ProfileEvent.fetched());
+    } catch (e) {
+      emit(ProfileState.error(e.toString()));
+    }
+  }
+
+  Future<void> _onNicknameUpdated(
+    ProfileNicknameUpdated event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      await _profileRepository.updateNickname(event.name);
       add(const ProfileEvent.fetched());
     } catch (e) {
       emit(ProfileState.error(e.toString()));
