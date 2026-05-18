@@ -1,8 +1,7 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
 import 'package:expense_tracker/src/features/home/widgets/et_transaction_tile.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/transaction.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_list_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

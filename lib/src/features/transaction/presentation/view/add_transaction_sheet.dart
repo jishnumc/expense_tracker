@@ -1,6 +1,5 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/bloc.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';

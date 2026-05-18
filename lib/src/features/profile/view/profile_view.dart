@@ -11,7 +11,7 @@ import 'package:expense_tracker/src/features/profile/widgets/et_nickname_editor.
 import 'package:expense_tracker/src/features/profile/widgets/et_sync_progress_dialog.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/category.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/bloc.dart';
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -12,15 +12,12 @@ import 'package:expense_tracker/src/features/transaction/data/data_sources/categ
 import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
 import 'package:expense_tracker/src/features/transaction/data/repositories/transaction_repository_impl.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/category_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/presentation/bloc/bloc.dart';
 import 'package:expense_tracker/src/features/profile/data/data_sources/profile_local_data_source.dart';
 import 'package:expense_tracker/src/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:expense_tracker/src/features/profile/domain/repositories/profile_repository.dart';
 import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_bloc.dart';
 import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_summary_bloc.dart';
-import 'package:expense_tracker/src/features/transaction/presentation/bloc/transaction_list_bloc.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/amount_validator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
