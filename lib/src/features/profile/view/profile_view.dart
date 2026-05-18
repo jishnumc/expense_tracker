@@ -1,5 +1,6 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
 import 'package:expense_tracker/src/app_ui/assets.dart';
+import 'package:expense_tracker/src/features/auth/login/data/data_sources/auth_local_data_source.dart';
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:expense_tracker/src/features/profile/presentation/bloc/cloud_sync_bloc.dart';
@@ -26,9 +27,12 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
+  late String _nickname;
+
   @override
   void initState() {
     super.initState();
+    _nickname = sl<AuthLocalDataSource>().getNickname() ?? 'User';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CategoryBloc>().add(const CategoryEvent.fetched());
@@ -159,7 +163,15 @@ class _ProfileViewState extends State<ProfileView> {
                             ),
                       ),
                       const SizedBox(height: 32),
-                      const ETNicknameEditor(initialNickname: 'Naazley'),
+                      ETNicknameEditor(
+                        initialNickname: _nickname,
+                        onSave: (newName) async {
+                          await sl<AuthLocalDataSource>().saveNickname(newName);
+                          setState(() {
+                            _nickname = newName;
+                          });
+                        },
+                      ),
                       const SizedBox(height: 32),
                       BlocBuilder<ProfileBloc, ProfileState>(
                         builder: (context, state) {
