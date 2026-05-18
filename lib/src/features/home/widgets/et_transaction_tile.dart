@@ -1,4 +1,5 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/system/utils/app_utils.dart';
 import 'package:flutter/material.dart';
 
 class ETTransactionTile extends StatelessWidget {
@@ -31,42 +32,42 @@ class ETTransactionTile extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(
-              icon,
-              color: colors.white,
-              size: 24,
-            ),
+            child: Icon(icon, color: colors.white, size: 16),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 12,
               children: [
                 Text(
-                  title,
+                  title.toCapitalized(),
                   style: textTheme.titleMedium?.copyWith(
                     color: colors.white,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  category,
+                  category.toCapitalized(),
                   style: textTheme.bodySmall?.copyWith(
                     color: colors.white.withValues(alpha: 0.5),
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -85,7 +86,8 @@ class ETTransactionTile extends StatelessWidget {
               Text(
                 '${isExpense ? '-' : '+'}₹${amount.toInt()}',
                 style: textTheme.titleMedium?.copyWith(
-                  color: isExpense ? colors.error : colors.success,
+                  fontSize: 22,
+                  color: isExpense ? colors.expenseSecondary : colors.success,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -94,15 +96,7 @@ class ETTransactionTile extends StatelessWidget {
           const SizedBox(width: 16),
           InkWell(
             onTap: onDelete,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Icon(
-                Icons.delete,
-                color: Colors.red.shade900,
-                size: 24,
-              ),
-            ),
+            child: Icon(Icons.delete, color: colors.expenseSecondary, size: 22),
           ),
         ],
       ),

@@ -29,5 +29,6 @@ class AppColorsDark extends AppColors {
         onSurface: const Color(0xFFE6E1E5),
         outline: const Color(0xFF938F99),
         white: const Color(0xFFFFFFFF),
+        foundationBlack: const Color(0xFF141414),
       );
 }

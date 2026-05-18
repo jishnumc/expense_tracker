@@ -262,9 +262,7 @@ class _SegmentItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? (label == 'Expense' ? colors.incomePrimary : colors.primary)
-              : Colors.transparent,
+          color: isSelected ? colors.incomeSecondary : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
@@ -319,7 +317,7 @@ class _CategoryList extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
-                              ? colors.primary
+                              ? colors.primary.withValues(alpha: 0.9)
                               : colors.white.withValues(alpha: 0.1),
                         ),
                       ),
@@ -390,20 +388,18 @@ class _InfoBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.incomePrimary.withValues(alpha: 0.05),
+        color: colors.incomePrimary.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.incomePrimary.withValues(alpha: 0.1)),
+        border: Border.all(color: colors.incomePrimary.withValues(alpha: 0.9)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: colors.incomePrimary, size: 20),
+          Icon(Icons.info_outline, color: colors.white, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Everything you add here is saved only on your device.',
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.white.withValues(alpha: 0.7),
-              ),
+              style: textTheme.bodySmall?.copyWith(color: colors.white),
             ),
           ),
         ],

@@ -28,5 +28,6 @@ class AppColorsLight extends AppColors {
         onSurface: const Color(0xFF1C1B1F),
         outline: const Color(0xFF79747E),
         white: const Color(0xFFFFFFFF),
+        foundationBlack: const Color(0xFF141414),
       );
 }

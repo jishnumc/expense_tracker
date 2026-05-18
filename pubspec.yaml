@@ -35,6 +35,9 @@ dependencies:
   talker_flutter: ^5.1.17
   talker_chopper_logger: ^5.1.17
   talker_bloc_logger: ^5.1.17
+  fl_country_code_picker: ^0.1.9+1
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:

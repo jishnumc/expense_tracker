@@ -5,24 +5,28 @@ class ETMonthlyLimitCard extends StatelessWidget {
   const ETMonthlyLimitCard({
     required this.spentAmount,
     required this.totalLimit,
+    this.isIncome = false,
     super.key,
   });
 
   final double spentAmount;
   final double totalLimit;
+  final bool isIncome;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
     final textTheme = Theme.of(context).textTheme;
-    final progress = totalLimit == 0 ? 0.0 : (spentAmount / totalLimit).clamp(0.0, 1.0);
+    final progress = totalLimit == 0
+        ? 0.0
+        : (spentAmount / totalLimit).clamp(0.0, 1.0);
     final remainingPercentage = ((1 - progress) * 100).toInt();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
         color: colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colors.white.withValues(alpha: 0.1),
           width: 1,
@@ -34,7 +38,7 @@ class ETMonthlyLimitCard extends StatelessWidget {
           Text(
             'MONTHLY LIMIT',
             style: textTheme.labelMedium?.copyWith(
-              color: colors.white.withValues(alpha: 0.5),
+              color: colors.white.withValues(alpha: 0.7),
               letterSpacing: 1.2,
               fontWeight: FontWeight.w600,
             ),
@@ -65,24 +69,36 @@ class ETMonthlyLimitCard extends StatelessWidget {
           const SizedBox(height: 20),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: colors.white.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                totalLimit == 0
-                    ? Colors.grey.shade400
-                    : (spentAmount > totalLimit
-                        ? colors.expenseSecondary
-                        : colors.success),
-              ),
-            ),
+            child: totalLimit == 0
+                ? LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 8,
+                    backgroundColor: colors.white.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.grey.shade400,
+                    ),
+                  )
+                : ShaderMask(
+                    shaderCallback: (bounds) => LinearGradient(
+                      colors: totalLimit > spentAmount
+                          ? [colors.incomeSecondary, colors.incomePrimary]
+                          : [colors.expenseSecondary, colors.expensePrimary],
+                    ).createShader(bounds),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 8,
+                      backgroundColor: colors.white.withValues(alpha: 0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Colors.white,
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(height: 12),
           Text(
             '$remainingPercentage% Remaining',
             style: textTheme.bodyMedium?.copyWith(
-              color: colors.white.withValues(alpha: 0.5),
+              color: colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:expense_tracker/src/outer_layer/notifications/notification_client.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -57,6 +58,22 @@ class _AppState extends State<App> {
         themeMode: ThemeMode.dark,
         theme: const AppThemeLight(textTheme).themeData,
         darkTheme: const AppThemeDark(textTheme).themeData,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'),
+          Locale('es'),
+          Locale('fr'),
+          Locale('de'),
+          Locale('it'),
+          Locale('ja'),
+          Locale('ko'),
+          Locale('zh'),
+          Locale('pt'),
+        ],
       ),
     );
   }

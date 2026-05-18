@@ -7,6 +7,7 @@ class ETPrimaryButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.child,
+    this.padding = EdgeInsets.zero,
     super.key,
   });
 
@@ -16,6 +17,7 @@ class ETPrimaryButton extends StatelessWidget {
 
   final Widget? icon;
   final Widget? child;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +31,8 @@ class ETPrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: padding,
         ),
         child:
             child ??
@@ -45,6 +45,8 @@ class ETPrimaryButton extends StatelessWidget {
                   label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: context.zAppColors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

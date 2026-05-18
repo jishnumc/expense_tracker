@@ -1,5 +1,7 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/app_ui/assets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ETNicknameEditor extends StatefulWidget {
   const ETNicknameEditor({
@@ -47,7 +49,7 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
         Text(
           'NICKNAME',
           style: textTheme.labelMedium?.copyWith(
-            color: colors.white.withValues(alpha: 0.5),
+            color: colors.white,
             letterSpacing: 1.2,
             fontWeight: FontWeight.w600,
           ),
@@ -59,22 +61,45 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: isEditing
-                  ? _buildEditMode(colors, textTheme)
-                  : _buildViewMode(colors, textTheme),
+                  ? _NicknameEditMode(
+                      controller: _controller,
+                      onSavePressed: () {
+                        widget.onSave?.call(_controller.text);
+                        _toggleEditing();
+                      },
+                    )
+                  : _NicknameViewMode(
+                      nickname: _controller.text,
+                      onEditPressed: _toggleEditing,
+                    ),
             );
           },
         ),
       ],
     );
   }
+}
 
-  Widget _buildViewMode(AppColors colors, TextTheme textTheme) {
+class _NicknameViewMode extends StatelessWidget {
+  const _NicknameViewMode({
+    required this.nickname,
+    required this.onEditPressed,
+  });
+
+  final String nickname;
+  final VoidCallback onEditPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       key: const ValueKey('view'),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: colors.white.withValues(alpha: 0.1),
           width: 1,
@@ -84,24 +109,26 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            _controller.text,
-            style: textTheme.headlineMedium?.copyWith(
+            nickname,
+            style: textTheme.headlineSmall?.copyWith(
               color: colors.white,
-              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
             ),
           ),
           GestureDetector(
-            onTap: _toggleEditing,
+            onTap: onEditPressed,
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: colors.white, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.white, width: 1),
               ),
-              child: const Icon(
-                Icons.edit_outlined,
-                color: Colors.white,
-                size: 20,
+              child: SvgPicture.asset(
+                AppAssets.etEdit,
+                colorFilter: ColorFilter.mode(colors.white, BlendMode.srcIn),
+                height: 12.5,
+                width: 12.5,
               ),
             ),
           ),
@@ -109,8 +136,21 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
       ),
     );
   }
+}
 
-  Widget _buildEditMode(AppColors colors, TextTheme textTheme) {
+class _NicknameEditMode extends StatelessWidget {
+  const _NicknameEditMode({
+    required this.controller,
+    required this.onSavePressed,
+  });
+
+  final TextEditingController controller;
+  final VoidCallback onSavePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+
     return Container(
       key: const ValueKey('edit'),
       padding: const EdgeInsets.all(20),
@@ -125,7 +165,7 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
       child: Column(
         children: [
           ETTextField(
-            controller: _controller,
+            controller: controller,
             hintText: 'Enter nickname',
             suffixIcon: Icon(
               Icons.check_circle_outline,
@@ -134,13 +174,7 @@ class _ETNicknameEditorState extends State<ETNicknameEditor> {
             ),
           ),
           const SizedBox(height: 20),
-          ETPrimaryButton(
-            label: 'Save',
-            onPressed: () {
-              widget.onSave?.call(_controller.text);
-              _toggleEditing();
-            },
-          ),
+          ETPrimaryButton(label: 'Save', onPressed: onSavePressed),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/app_ui/assets.dart';
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:expense_tracker/src/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:expense_tracker/src/features/profile/presentation/bloc/cloud_sync_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:expense_tracker/src/features/transaction/presentation/bloc/categ
 import 'package:expense_tracker/src/system/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -294,11 +296,16 @@ class _ProfileViewState extends State<ProfileView> {
                         },
                         child: ETSecondaryButton(
                           label: 'Log Out',
+                          color: colors.expenseSecondary,
                           onPressed: handleLogout,
-                          icon: Icon(
-                            Icons.power_settings_new,
-                            color: context.zAppColors.error,
-                            size: 28,
+                          icon: SvgPicture.asset(
+                            AppAssets.etPower,
+                            height: 24,
+                            width: 24,
+                            colorFilter: ColorFilter.mode(
+                              context.zAppColors.expenseSecondary,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ),

@@ -23,7 +23,7 @@ class ETBottomNavBar extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: colors.white.withValues(alpha: 0.1),
+          color: colors.foundationBlack.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
             color: colors.white.withValues(alpha: 0.1),

@@ -17,6 +17,7 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
+  String _selectedCountryCode = '+91';
 
   @override
   void dispose() {
@@ -78,11 +79,13 @@ class _LoginViewState extends State<LoginView> {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(10),
                   ],
-                  prefix: Text(
-                    '+91',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: context.zAppColors.white,
-                    ),
+                  prefix: ETCountryCodePicker(
+                    selectedCountryCode: _selectedCountryCode,
+                    onChanged: (code) {
+                      setState(() {
+                        _selectedCountryCode = code;
+                      });
+                    },
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -108,8 +111,8 @@ class _LoginViewState extends State<LoginView> {
                       onPressed: state.maybeWhen(
                         loading: () => null,
                         orElse: () => () {
-                          final phone = _phoneController.text.trim();
-                          if (phone.isEmpty) {
+                          final localPhone = _phoneController.text.trim();
+                          if (localPhone.isEmpty) {
                             ETSnackBar.show(
                               context,
                               message: 'Please enter your phone number',
@@ -119,6 +122,7 @@ class _LoginViewState extends State<LoginView> {
                           }
 
                           if (_formKey.currentState?.validate() ?? false) {
+                            final phone = '$_selectedCountryCode$localPhone';
                             context.read<AuthBloc>().add(
                               AuthEvent.sendOtpRequested(phone),
                             );

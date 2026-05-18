@@ -27,6 +27,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.onSurface,
     required this.outline,
     required this.white,
+    required this.foundationBlack,
   });
 
   /// The primary color.
@@ -89,6 +90,9 @@ class AppColors extends ThemeExtension<AppColors> {
   /// The white color.
   final Color white;
 
+  /// The foundation black color.
+  final Color foundationBlack;
+
   @override
   AppColors copyWith({
     Color? primary,
@@ -111,6 +115,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? onSurface,
     Color? outline,
     Color? white,
+    Color? foundationBlack,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -133,6 +138,7 @@ class AppColors extends ThemeExtension<AppColors> {
       onSurface: onSurface ?? this.onSurface,
       outline: outline ?? this.outline,
       white: white ?? this.white,
+      foundationBlack: foundationBlack ?? this.foundationBlack,
     );
   }
 
@@ -182,6 +188,7 @@ class AppColors extends ThemeExtension<AppColors> {
       onSurface: Color.lerp(onSurface, other.onSurface, t)!,
       outline: Color.lerp(outline, other.outline, t)!,
       white: Color.lerp(white, other.white, t)!,
+      foundationBlack: Color.lerp(foundationBlack, other.foundationBlack, t)!,
     );
   }
 }

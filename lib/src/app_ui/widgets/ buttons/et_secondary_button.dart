@@ -32,7 +32,7 @@ class ETSecondaryButton extends StatelessWidget {
             width: 1,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
           ),
           padding: EdgeInsets.zero,
         ),
@@ -42,14 +42,12 @@ class ETSecondaryButton extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: displayColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: displayColor,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            if (icon != null) ...[
-              const SizedBox(width: 12),
-              icon!,
-            ],
+            if (icon != null) ...[const SizedBox(width: 12), icon!],
           ],
         ),
       ),

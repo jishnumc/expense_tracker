@@ -21,13 +21,13 @@ class ETSummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         color: isIncome ? colors.incomeSecondary : colors.expenseSecondary,
       ),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(19),
+          borderRadius: BorderRadius.circular(10),
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
@@ -43,6 +43,7 @@ class ETSummaryCard extends StatelessWidget {
               title,
               style: textTheme.bodyMedium?.copyWith(
                 color: colors.white.withValues(alpha: 0.8),
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -61,7 +62,7 @@ class ETSummaryCard extends StatelessWidget {
                     style: textTheme.headlineSmall?.copyWith(
                       color: colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 22,
+                      fontSize: 24,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

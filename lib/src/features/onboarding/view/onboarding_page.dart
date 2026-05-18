@@ -32,7 +32,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
-
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       body: Stack(
         children: [
@@ -69,6 +69,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
                 // Page Content
                 SizedBox(
+                  width: double.infinity,
                   height: 300,
                   child: PageView.builder(
                     controller: _pageController,
@@ -80,21 +81,22 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     itemCount: _pages.length,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             // Indicators
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: List.generate(
                                 _pages.length,
                                 (dotIndex) => Container(
                                   margin: const EdgeInsets.only(right: 8),
                                   height: 4,
-                                  width: 100, // Based on screenshot width
+                                  width: 100,
                                   decoration: BoxDecoration(
-                                    color: dotIndex == _currentPage
+                                    color: dotIndex <= _currentPage
                                         ? colors.white
                                         : colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(2),
@@ -105,9 +107,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                             const SizedBox(height: 40),
                             Text(
                               _pages[index].title,
-                              style: TextStyle(
+                              style: textTheme.headlineMedium?.copyWith(
                                 color: colors.white,
-                                fontSize: 28,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 height: 1.2,
                               ),
@@ -115,9 +117,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                             const SizedBox(height: 16),
                             Text(
                               _pages[index].subtitle,
-                              style: TextStyle(
+                              style: textTheme.headlineMedium?.copyWith(
                                 color: colors.white.withValues(alpha: 0.7),
-                                fontSize: 16,
+                                fontSize: 15,
                                 height: 1.5,
                               ),
                             ),

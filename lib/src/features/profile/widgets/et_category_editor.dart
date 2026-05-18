@@ -1,8 +1,11 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/app_ui/assets.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/category.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validation_result.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/category_validator.dart';
+import 'package:expense_tracker/src/system/utils/app_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ETCategoryEditor extends StatefulWidget {
   const ETCategoryEditor({
@@ -48,17 +51,17 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
         Text(
           'CATEGORIES',
           style: textTheme.labelMedium?.copyWith(
-            color: colors.white.withValues(alpha: 0.5),
+            color: colors.white,
             letterSpacing: 1.2,
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: colors.white.withValues(alpha: 0.1),
               width: 1,
@@ -81,9 +84,10 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
                   ),
                   const SizedBox(width: 12),
                   SizedBox(
-                    width: 60,
-                    height: 56,
+                    width: 48,
+                    height: 48,
                     child: ETPrimaryButton(
+                      padding: EdgeInsets.all(10),
                       label: '',
                       onPressed: () {
                         final validator = CategoryValidator(
@@ -100,7 +104,11 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
                         _controller.clear();
                         _errorNotifier.value = null;
                       },
-                      child: const Icon(Icons.add, color: Colors.white),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -124,7 +132,10 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
               const Divider(color: Colors.white10),
               const SizedBox(height: 12),
               ...widget.categories.map(
-                (category) => _buildCategoryRow(category, colors, textTheme),
+                (category) => _CategoryRow(
+                  category: category,
+                  onDelete: () => widget.onDelete?.call(category),
+                ),
               ),
             ],
           ),
@@ -132,37 +143,50 @@ class _ETCategoryEditorState extends State<ETCategoryEditor> {
       ],
     );
   }
+}
 
-  Widget _buildCategoryRow(
-    Category category,
-    AppColors colors,
-    TextTheme textTheme,
-  ) {
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow({required this.category, required this.onDelete});
+
+  final Category category;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.zAppColors;
+    final textTheme = Theme.of(context).textTheme;
+    const iconDimension = 16.0;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            category.name,
+            category.name.toCapitalized(),
             style: textTheme.titleMedium?.copyWith(
               color: colors.white,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
           GestureDetector(
-            onTap: () => widget.onDelete?.call(category),
+            onTap: onDelete,
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: colors.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: colors.expenseSecondary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: colors.error.withValues(alpha: 0.5),
+                  color: colors.expenseSecondary.withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
-              child: Icon(Icons.delete_outline, color: colors.error, size: 20),
+              child: SvgPicture.asset(
+                AppAssets.etDelete,
+                width: iconDimension,
+                height: iconDimension,
+              ),
             ),
           ),
         ],
