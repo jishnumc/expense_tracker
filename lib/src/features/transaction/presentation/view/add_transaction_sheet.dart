@@ -65,133 +65,144 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         },
         child: Builder(
           builder: (context) {
+            final bottomInset = MediaQuery.of(context).viewInsets.bottom;
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               decoration: const BoxDecoration(
                 color: Color(0xFF1A1A1A), // Match the dark sheet color
                 borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    24,
+                    24,
+                    bottomInset > 0 ? bottomInset + 16 : 24,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Add Transaction',
-                          style: textTheme.headlineSmall?.copyWith(
-                            color: colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Text(
-                            'Close',
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colors.white.withValues(alpha: 0.5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Add Transaction',
+                              style: textTheme.headlineSmall?.copyWith(
+                                color: colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Text(
+                                'Close',
+                                style: textTheme.bodyLarge?.copyWith(
+                                  color: colors.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        _SegmentedControl(
+                          isExpense: _isExpense,
+                          onChanged: (value) => setState(() => _isExpense = value),
+                        ),
+                        const SizedBox(height: 24),
+                        ETTextField(
+                          controller: _noteController,
+                          hintText: 'Note',
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter a note';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        ETTextField(
+                          controller: _amountController,
+                          hintText: 'Amount (₹)',
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*'),
+                            ),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter amount';
+                            }
+                            final result = const AmountValidator().validate(value);
+                            if (result is ValidationFailure) {
+                              return result.error.message;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'CATEGORY',
+                          style: textTheme.labelMedium?.copyWith(
+                            color: colors.white.withValues(alpha: 0.5),
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    _SegmentedControl(
-                      isExpense: _isExpense,
-                      onChanged: (value) => setState(() => _isExpense = value),
-                    ),
-                    const SizedBox(height: 24),
-                    ETTextField(
-                      controller: _noteController,
-                      hintText: 'Note',
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a note';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    ETTextField(
-                      controller: _amountController,
-                      hintText: 'Amount (₹)',
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d*'),
+                        const SizedBox(height: 12),
+                        _CategoryList(
+                          selectedCategoryId: _selectedCategoryId,
+                          onSelected: (id) =>
+                              setState(() => _selectedCategoryId = id),
                         ),
+                        const SizedBox(height: 24),
+                        const _InfoBox(),
+                        const SizedBox(height: 32),
+                        BlocBuilder<TransactionBloc, TransactionState>(
+                          builder: (context, state) {
+                            return ETPrimaryButton(
+                              label: state.maybeWhen(
+                                loading: () => 'SAVING...',
+                                orElse: () => 'Save',
+                              ),
+                              onPressed: state.maybeWhen(
+                                loading: () => null,
+                                orElse: () => () {
+                                  if (_formKey.currentState?.validate() ?? false) {
+                                    if (_selectedCategoryId == null) {
+                                      ETSnackBar.show(
+                                        context,
+                                        message: 'Please select a category',
+                                        type: ETSnackBarType.error,
+                                      );
+                                      return;
+                                    }
+                                    context.read<TransactionBloc>().add(
+                                      TransactionEvent.created(
+                                        amount: double.parse(
+                                          _amountController.text,
+                                        ),
+                                        note: _noteController.text.trim(),
+                                        type: _isExpense ? 'debit' : 'credit',
+                                        categoryId: _selectedCategoryId!,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
                       ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter amount';
-                        }
-                        final result = const AmountValidator().validate(value);
-                        if (result is ValidationFailure) {
-                          return result.error.message;
-                        }
-                        return null;
-                      },
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'CATEGORY',
-                      style: textTheme.labelMedium?.copyWith(
-                        color: colors.white.withValues(alpha: 0.5),
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _CategoryList(
-                      selectedCategoryId: _selectedCategoryId,
-                      onSelected: (id) =>
-                          setState(() => _selectedCategoryId = id),
-                    ),
-                    const SizedBox(height: 24),
-                    const _InfoBox(),
-                    const SizedBox(height: 32),
-                    BlocBuilder<TransactionBloc, TransactionState>(
-                      builder: (context, state) {
-                        return ETPrimaryButton(
-                          label: state.maybeWhen(
-                            loading: () => 'SAVING...',
-                            orElse: () => 'Save',
-                          ),
-                          onPressed: state.maybeWhen(
-                            loading: () => null,
-                            orElse: () => () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                if (_selectedCategoryId == null) {
-                                  ETSnackBar.show(
-                                    context,
-                                    message: 'Please select a category',
-                                    type: ETSnackBarType.error,
-                                  );
-                                  return;
-                                }
-                                context.read<TransactionBloc>().add(
-                                  TransactionEvent.created(
-                                    amount: double.parse(
-                                      _amountController.text,
-                                    ),
-                                    note: _noteController.text.trim(),
-                                    type: _isExpense ? 'debit' : 'credit',
-                                    categoryId: _selectedCategoryId!,
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                  ),
                 ),
               ),
             );

@@ -16,39 +16,43 @@ class ETBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.zAppColors;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 77.5),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          color: colors.foundationBlack.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(
-            color: colors.white.withValues(alpha: 0.1),
-            width: 1,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 77.5),
+        child: Container(
+          margin: EdgeInsets.fromLTRB(24, 0, 24, bottomPadding > 0 ? 0 : 30),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: colors.foundationBlack.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: colors.white.withValues(alpha: 0.1),
+              width: 1,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _NavBarItem(
-              icon: AppAssets.etChartPieSlice,
-              isSelected: currentIndex == 0,
-              onTap: () => onTap(0),
-            ),
-            _NavBarItem(
-              icon: AppAssets.etArrowsCounterClockwise,
-              isSelected: currentIndex == 1,
-              onTap: () => onTap(1),
-            ),
-            _NavBarItem(
-              icon: AppAssets.etUserCircleGear,
-              isSelected: currentIndex == 2,
-              onTap: () => onTap(2),
-            ),
-          ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _NavBarItem(
+                icon: AppAssets.etChartPieSlice,
+                isSelected: currentIndex == 0,
+                onTap: () => onTap(0),
+              ),
+              _NavBarItem(
+                icon: AppAssets.etArrowsCounterClockwise,
+                isSelected: currentIndex == 1,
+                onTap: () => onTap(1),
+              ),
+              _NavBarItem(
+                icon: AppAssets.etUserCircleGear,
+                isSelected: currentIndex == 2,
+                onTap: () => onTap(2),
+              ),
+            ],
+          ),
         ),
       ),
     );
