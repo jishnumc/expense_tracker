@@ -14,16 +14,25 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   @override
+  void initState() {
+    super.initState();
+    // ✅ Triggers _onCheckStatusRequested in AuthBloc
+    context.read<AuthBloc>().add(const AuthCheckStatusRequested());
+  }
+
+  void _handleAuthState(AuthState state) {
+    state.maybeWhen(
+      authenticated: (user) => context.go('/home'),
+      initial: () => context.go('/onboarding'),
+      error: (_) => context.go('/onboarding'),
+      orElse: () {}, // loading → stays on splash
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        state.maybeWhen(
-          authenticated: (user) => context.go('/home'),
-          initial: () => context.go('/onboarding'),
-          error: (_) => context.go('/onboarding'),
-          orElse: () {},
-        );
-      },
+      listener: (context, state) => _handleAuthState(state),
       child: Scaffold(
         body: Center(
           child: SvgPicture.asset(AppAssets.etLogo, width: 133, height: 104),

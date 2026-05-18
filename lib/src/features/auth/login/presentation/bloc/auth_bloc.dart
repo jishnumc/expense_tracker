@@ -23,7 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }) : _authRepository = authRepository,
        _phoneValidator = phoneValidator,
        _syncRepository = syncRepository,
-       super(const AuthState.initial()) {
+       super(const AuthState.loading()) {
     on<AuthSendOtpRequested>(_onSendOtpRequested);
     on<AuthVerifyOtpRequested>(_onVerifyOtpRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
@@ -55,7 +55,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await _authRepository.saveUser(user);
 
             try {
-              talker.info('AuthBloc: Existing user login, restoring data from cloud...');
+              talker.info(
+                'AuthBloc: Existing user login, restoring data from cloud...',
+              );
               await _syncRepository.restoreDataFromServer();
             } catch (e) {
               talker.error('AuthBloc: Failed to restore data during login', e);
@@ -76,6 +78,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         } catch (e) {
           emit(AuthState.error(e.toString()));
         }
+
       case ValidationFailure():
         emit(AuthState.error(validation.error.message));
     }
@@ -85,10 +88,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthVerifyOtpRequested event,
     Emitter<AuthState> emit,
   ) async {
-    // In this flow, Step 2 is user enters OTP.
-    // If userExists == true, we already have nickname and token from sendOtp.
-    // If userExists == false, we need to go to register screen.
-
     if (event.userExists) {
       if (event.token != null && event.nickname != null) {
         final user = User(
@@ -99,10 +98,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _authRepository.saveUser(user);
 
         try {
-          talker.info('AuthBloc: Existing user OTP verified, restoring data from cloud...');
+          talker.info(
+            'AuthBloc: Existing user OTP verified, restoring data from cloud...',
+          );
           await _syncRepository.restoreDataFromServer();
         } catch (e) {
-          talker.error('AuthBloc: Failed to restore data during OTP verification', e);
+          talker.error(
+            'AuthBloc: Failed to restore data during OTP verification',
+            e,
+          );
         }
 
         emit(AuthState.authenticated(user));
@@ -136,11 +140,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthCheckStatusRequested event,
     Emitter<AuthState> emit,
   ) async {
-    final user = await _authRepository.getSavedUser();
-    if (user != null) {
-      emit(AuthState.authenticated(user));
-    } else {
-      emit(const AuthState.initial());
+    try {
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      final user = await _authRepository.getSavedUser();
+      if (user != null) {
+        emit(AuthState.authenticated(user));
+      } else {
+        emit(const AuthState.initial());
+      }
+    } catch (e) {
+      emit(AuthState.error(e.toString()));
     }
   }
 

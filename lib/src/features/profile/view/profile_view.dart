@@ -96,7 +96,10 @@ class _ProfileViewState extends State<ProfileView> {
                   );
                 }
               } else if (state is CloudSyncSuccess) {
-                Navigator.of(context, rootNavigator: true).pop(); // Close dialog
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pop(); // Close dialog
                 ETSnackBar.show(
                   context,
                   message: 'Data synced successfully!',
@@ -105,21 +108,30 @@ class _ProfileViewState extends State<ProfileView> {
                 // Reload categories to ensure UI is completely updated
                 context.read<CategoryBloc>().add(const CategoryEvent.fetched());
               } else if (state is CloudSyncNoDataToSync) {
-                Navigator.of(context, rootNavigator: true).pop(); // Close dialog
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pop(); // Close dialog
                 ETSnackBar.show(
                   context,
                   message: 'Nothing to sync!',
                   type: ETSnackBarType.info,
                 );
               } else if (state is CloudSyncAlreadySynced) {
-                Navigator.of(context, rootNavigator: true).pop(); // Close dialog
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pop(); // Close dialog
                 ETSnackBar.show(
                   context,
                   message: 'Data is up to date and fully synced!',
                   type: ETSnackBarType.success,
                 );
               } else if (state is CloudSyncFailure) {
-                Navigator.of(context, rootNavigator: true).pop(); // Close dialog
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pop(); // Close dialog
                 ETSnackBar.show(
                   context,
                   message: 'Sync failed: ${state.error}',
@@ -138,7 +150,8 @@ class _ProfileViewState extends State<ProfileView> {
                       const SizedBox(height: 20),
                       Text(
                         'Profile',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
                               color: colors.white,
                               fontWeight: FontWeight.bold,
                             ),
@@ -157,19 +170,20 @@ class _ProfileViewState extends State<ProfileView> {
                               currentLimit: profile.budgetLimit,
                               onSet: (limit) {
                                 context.read<ProfileBloc>().add(
-                                      ProfileEvent.budgetLimitUpdated(limit),
-                                    );
+                                  ProfileEvent.budgetLimitUpdated(limit),
+                                );
                               },
                             ),
                             error: (message) => ETAlertLimitEditor(
                               currentLimit: 0,
                               onSet: (limit) {
                                 context.read<ProfileBloc>().add(
-                                      ProfileEvent.budgetLimitUpdated(limit),
-                                    );
+                                  ProfileEvent.budgetLimitUpdated(limit),
+                                );
                               },
                             ),
-                            orElse: () => const ETAlertLimitEditor(currentLimit: 0),
+                            orElse: () =>
+                                const ETAlertLimitEditor(currentLimit: 0),
                           );
                         },
                       ),
@@ -204,12 +218,12 @@ class _ProfileViewState extends State<ProfileView> {
                                 categories: categories,
                                 onAdd: (name) {
                                   context.read<CategoryBloc>().add(
-                                        CategoryEvent.created(name),
-                                      );
+                                    CategoryEvent.created(name),
+                                  );
                                   // Re-fetch category list on add attempt
                                   context.read<CategoryBloc>().add(
-                                        const CategoryEvent.fetched(),
-                                      );
+                                    const CategoryEvent.fetched(),
+                                  );
                                 },
                                 onDelete: (category) async {
                                   final shouldDelete = await showDialog<bool>(
@@ -226,8 +240,8 @@ class _ProfileViewState extends State<ProfileView> {
 
                                   if (shouldDelete == true && context.mounted) {
                                     context.read<CategoryBloc>().add(
-                                          CategoryEvent.deleted(category.id),
-                                        );
+                                      CategoryEvent.deleted(category.id),
+                                    );
                                   }
                                 },
                               ),
@@ -235,8 +249,8 @@ class _ProfileViewState extends State<ProfileView> {
                                 categories: const [],
                                 onAdd: (name) {
                                   context.read<CategoryBloc>().add(
-                                        CategoryEvent.created(name),
-                                      );
+                                    CategoryEvent.created(name),
+                                  );
                                 },
                               ),
                               orElse: () => const SizedBox.shrink(),
@@ -247,7 +261,9 @@ class _ProfileViewState extends State<ProfileView> {
                       const SizedBox(height: 32),
                       ETCloudSyncCard(
                         onSync: () {
-                          context.read<CloudSyncBloc>().add(const SyncTriggered());
+                          context.read<CloudSyncBloc>().add(
+                            const SyncTriggered(),
+                          );
                         },
                       ),
                       const SizedBox(height: 32),
@@ -265,8 +281,12 @@ class _ProfileViewState extends State<ProfileView> {
                             },
                             initial: () {
                               // Clear active category & profile states
-                              context.read<ProfileBloc>().add(const ProfileEvent.fetched());
-                              context.read<CategoryBloc>().add(const CategoryEvent.fetched());
+                              context.read<ProfileBloc>().add(
+                                const ProfileEvent.fetched(),
+                              );
+                              context.read<CategoryBloc>().add(
+                                const CategoryEvent.fetched(),
+                              );
                               context.go('/login');
                             },
                             orElse: () {},
