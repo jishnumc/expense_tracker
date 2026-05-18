@@ -9,6 +9,7 @@ abstract class AppAssets {
   static const etCloud = "assets/svg/et_cloud.svg";
   static const etDelete = "assets/svg/et_delete.svg";
   static const etEdit = "assets/svg/et_edit.svg";
+  static const etHand = "assets/svg/et_hand.svg";
 
   ///png
   static final etOnboardBg = "assets/png/et_onboard_bg.png";

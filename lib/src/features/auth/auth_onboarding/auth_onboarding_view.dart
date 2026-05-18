@@ -1,7 +1,9 @@
 import 'package:expense_tracker/src/app_ui/app_ui.dart';
+import 'package:expense_tracker/src/app_ui/assets.dart';
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthOnboardingView extends StatefulWidget {
@@ -58,13 +60,19 @@ class _AuthOnboardingViewState extends State<AuthOnboardingView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "👋 What should we call you?",
-                  style: textTheme.headlineMedium?.copyWith(
-                    color: colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
+                Row(
+                  children: [
+                    SvgPicture.asset(AppAssets.etHand, height: 36, width: 36),
+                    const SizedBox(width: 8),
+                    Text(
+                      "What should we call you?",
+                      style: textTheme.headlineMedium?.copyWith(
+                        color: colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 Text(

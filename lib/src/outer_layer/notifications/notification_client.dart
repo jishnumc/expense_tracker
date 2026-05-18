@@ -96,6 +96,7 @@ class NotificationClient implements INotificationClient {
       channelDescription: _budgetChannel.description,
       importance: Importance.max,
       priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
     );
 
     const iosDetails = DarwinNotificationDetails(
