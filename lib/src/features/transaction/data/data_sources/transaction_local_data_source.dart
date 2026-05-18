@@ -160,10 +160,10 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   Future<bool> hasUnsyncedData() async {
     final db = await _dbClient.database;
     final txResult = await db.rawQuery(
-      "SELECT count(*) as count FROM transactions WHERE is_synced = 0 AND is_deleted = 0",
+      "SELECT count(*) as count FROM transactions WHERE is_synced = 0",
     );
     final catResult = await db.rawQuery(
-      "SELECT count(*) as count FROM categories WHERE is_synced = 0 AND is_deleted = 0",
+      "SELECT count(*) as count FROM categories WHERE is_synced = 0",
     );
 
     final txCount = Sqflite.firstIntValue(txResult) ?? 0;
@@ -177,7 +177,10 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
     final db = await _dbClient.database;
     await db.update(
       'transactions',
-      {'is_deleted': 1},
+      {
+        'is_deleted': 1,
+        'is_synced': 0,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -188,7 +191,10 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
     final db = await _dbClient.database;
     await db.update(
       'categories',
-      {'is_deleted': 1},
+      {
+        'is_deleted': 1,
+        'is_synced': 0,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
