@@ -1,4 +1,4 @@
-name: expense_tracker
+name: Expense Tracker
 description: "A new Flutter project."
 
 publish_to: 'none' 
@@ -48,6 +48,7 @@ dev_dependencies:
   chopper_generator: ^8.4.0
   json_serializable: ^6.10.0
   freezed: ^3.2.5
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
