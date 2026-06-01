@@ -39,16 +39,21 @@ class SyncRepositoryImpl implements ISyncRepository {
     onProgress(0.02, 'Checking database status...');
 
     final totalCategories = await _categoryLocalDataSource.getCategoriesCount();
-    final totalTransactions = await _transactionLocalDataSource.getTransactionsCount();
+    final totalTransactions = await _transactionLocalDataSource
+        .getTransactionsCount();
 
     if (totalCategories == 0 && totalTransactions == 0) {
       throw const FreshDatabaseException();
     }
 
-    final deletedTransactions = await _transactionLocalDataSource.getDeletedTransactions();
-    final deletedCategories = await _categoryLocalDataSource.getDeletedCategories();
-    final unsyncedCategories = await _categoryLocalDataSource.getUnsyncedCategories();
-    final unsyncedTransactions = await _transactionLocalDataSource.getUnsyncedTransactions();
+    final deletedTransactions = await _transactionLocalDataSource
+        .getDeletedTransactions();
+    final deletedCategories = await _categoryLocalDataSource
+        .getDeletedCategories();
+    final unsyncedCategories = await _categoryLocalDataSource
+        .getUnsyncedCategories();
+    final unsyncedTransactions = await _transactionLocalDataSource
+        .getUnsyncedTransactions();
 
     if (deletedTransactions.isEmpty &&
         deletedCategories.isEmpty &&

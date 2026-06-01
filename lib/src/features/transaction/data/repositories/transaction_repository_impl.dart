@@ -1,5 +1,7 @@
 import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source_impl.dart';
 import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source_impl.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/category.dart';
 import 'package:expense_tracker/src/features/transaction/domain/entities/transaction.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
@@ -37,22 +39,30 @@ class TransactionRepositoryImpl implements ITransactionRepository {
       if (!response.isSuccessful) {
         final errorVal = response.error ?? response.body;
         final errorStr = errorVal?.toString() ?? '';
-        
-        throw Exception(errorStr.isNotEmpty ? errorStr : 'Failed to sync new category to remote');
+
+        throw Exception(
+          errorStr.isNotEmpty
+              ? errorStr
+              : 'Failed to sync new category to remote',
+        );
       }
-      
+
       // If remote succeeds, save locally and mark as synced
       await _categoryLocalDataSource.createCategory(category);
       await _categoryLocalDataSource.markCategoriesAsSynced([id]);
     } catch (e, stackTrace) {
-      talker.error('Failed to instantly sync category to remote', e, stackTrace);
-      
+      talker.error(
+        'Failed to instantly sync category to remote',
+        e,
+        stackTrace,
+      );
+
       final isConflict = e.toString().toLowerCase().contains('already exists');
       if (!isConflict) {
         // If it's a network error/timeout (and NOT a duplicate conflict), we save locally to sync later
         await _categoryLocalDataSource.createCategory(category);
       }
-      
+
       rethrow;
     }
   }

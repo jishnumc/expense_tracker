@@ -4,12 +4,14 @@ import 'package:expense_tracker/src/features/auth/login/data/repositories/auth_r
 import 'package:expense_tracker/src/features/auth/login/data/services/auth_service.dart';
 import 'package:expense_tracker/src/features/auth/login/domain/repositories/auth_repository.dart';
 import 'package:expense_tracker/src/features/auth/login/presentation/bloc/auth_bloc.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
 import 'package:expense_tracker/src/outer_layer/clients/api_client.dart';
 import 'package:expense_tracker/src/outer_layer/clients/storage_client.dart';
 import 'package:expense_tracker/src/outer_layer/validation/validators/phone_validator.dart';
 import 'package:expense_tracker/src/outer_layer/database/database_client.dart';
-import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source.dart';
-import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/category_local_data_source_impl.dart';
+import 'package:expense_tracker/src/features/transaction/data/data_sources/transaction_local_data_source_impl.dart';
 import 'package:expense_tracker/src/features/transaction/data/repositories/transaction_repository_impl.dart';
 import 'package:expense_tracker/src/features/transaction/domain/repositories/transaction_repository.dart';
 import 'package:expense_tracker/src/features/transaction/presentation/bloc/bloc.dart';
